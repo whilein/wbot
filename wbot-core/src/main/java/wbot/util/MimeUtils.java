@@ -42,7 +42,7 @@ public class MimeUtils {
     }
 
     private static Map<String, String> loadMimeTypes() {
-        InputStream is = MimeUtils.class.getClassLoader().getResourceAsStream("/mime_types.json");
+        InputStream is = MimeUtils.class.getClassLoader().getResourceAsStream("mime_types.json");
         if (is == null) {
             return null;
         }
