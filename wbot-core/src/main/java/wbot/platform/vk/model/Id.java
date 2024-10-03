@@ -33,7 +33,8 @@ import wbot.platform.PlatformType;
 @RequiredArgsConstructor(onConstructor = @__(@JsonCreator(mode = JsonCreator.Mode.DELEGATING)))
 public final class Id implements IdentityHolder {
 
-    public static final long CHAT_OFFSET = 2000000000;
+    public static final long CHAT_OFFSET = 2000000000L;
+    public static final long CHAT_OFFSET_MAX = 2100000000L;
 
     @JsonValue long value;
 
@@ -49,7 +50,7 @@ public final class Id implements IdentityHolder {
 
     @Override
     public boolean isChat() {
-        return value > CHAT_OFFSET;
+        return value > CHAT_OFFSET && value < CHAT_OFFSET_MAX;
     }
 
     @Override
