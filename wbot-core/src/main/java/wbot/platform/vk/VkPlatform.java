@@ -195,7 +195,7 @@ public final class VkPlatform implements Platform {
                 return uploadDocument(attachment)
                         .thenApply(doc -> "doc" + doc.getOwnerId() + "_" + doc.getId());
             default:
-                throw new IllegalArgumentException("Unknown attachment type " + attachment.type());
+                throw new IllegalArgumentException("Unsupported attachment type " + attachment.type());
         }
     }
 
