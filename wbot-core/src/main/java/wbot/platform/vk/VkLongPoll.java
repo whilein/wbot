@@ -135,6 +135,9 @@ public final class VkLongPoll {
                     case 3:
                         updateServer();
                 }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
             } catch (Exception e) {
                 logger.error("LongPoll receiving updates failure", e);
             }
