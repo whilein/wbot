@@ -25,6 +25,8 @@ import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.val;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import wbot.command.CommandEventHandler;
@@ -36,17 +38,22 @@ import wbot.event.SimpleEventDispatcher;
 import wbot.http.DefaultHttpClient;
 import wbot.http.HttpClient;
 import wbot.platform.Platform;
+import wbot.platform.PlatformType;
 import wbot.platform.telegram.TelegramClient;
 import wbot.platform.telegram.TelegramPlatform;
 import wbot.platform.vk.VkClient;
 import wbot.platform.vk.VkPlatform;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author whilein
@@ -60,6 +67,7 @@ public final class WBot {
     HttpClient httpClient;
 
     List<Platform> platforms;
+    Map<PlatformType, Platform> type2PlatformMap;
 
     @NonFinal
     List<Thread> threads;
@@ -113,6 +121,19 @@ public final class WBot {
         } finally {
             lock.unlock();
         }
+    }
+
+    public @NotNull Platform getPlatform(@NotNull PlatformType type) {
+        val platform = type2PlatformMap.get(type);
+        if (platform == null) {
+            throw new IllegalArgumentException("Platform " + type.getDisplayName() + " not enabled.");
+        }
+
+        return platform;
+    }
+
+    public @Unmodifiable @NotNull List<@NotNull Platform> getPlatforms() {
+        return Collections.unmodifiableList(platforms);
     }
 
     @Accessors(fluent = true)
@@ -213,7 +234,13 @@ public final class WBot {
                 ));
             }
 
-            return new WBot(httpClient, platforms, commandManager);
+            val type2PlatformMap = platforms.stream()
+                    .collect(Collectors.toMap(
+                            Platform::getType,
+                            Function.identity()
+                    ));
+
+            return new WBot(httpClient, platforms, type2PlatformMap, commandManager);
         }
 
     }
