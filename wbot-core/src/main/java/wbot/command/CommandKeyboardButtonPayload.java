@@ -28,5 +28,5 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 public class CommandKeyboardButtonPayload {
     String name;
-    String[] arguments;
+    String[] args;
 }

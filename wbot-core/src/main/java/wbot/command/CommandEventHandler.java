@@ -48,7 +48,7 @@ public final class CommandEventHandler implements EventHandler {
         val executor = commandManager.getKeyboardButtonExecutor(name);
         if (executor == null) return;
 
-        executor.execute(new KeyboardContext(platform, name, payload.getArguments(), inKeyboardCallback));
+        executor.execute(new KeyboardContext(platform, name, payload.getArgs(), inKeyboardCallback));
     }
 
     @Override
