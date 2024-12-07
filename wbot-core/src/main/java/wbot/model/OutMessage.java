@@ -65,6 +65,12 @@ public class OutMessage {
             return this;
         }
 
+        public Builder reply(InKeyboardCallback keyboardCallback) {
+            this.chat = keyboardCallback.getChat().getIdentity();
+            this.reply = keyboardCallback.getReplyMessageId();
+            return this;
+        }
+
         public Builder chat(InMessage inMessage) {
             return chat(inMessage.getChat());
         }
