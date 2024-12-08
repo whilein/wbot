@@ -44,6 +44,11 @@ public final class VkMessagesEdit extends VkMethod<Integer> {
         params.set("message_id", messageId);
         return this;
     }
+
+    public VkMessagesEdit conversationMessageId(long conversationMessageId) {
+        params.set("conversation_message_id", conversationMessageId);
+        return this;
+    }
     
     public VkMessagesEdit message(String message) {
         params.set("message", message);

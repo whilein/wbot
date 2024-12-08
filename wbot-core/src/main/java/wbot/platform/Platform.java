@@ -36,6 +36,8 @@ public interface Platform extends Runnable {
 
     CompletableFuture<Void> editAttachment(SentMessage message, Attachment attachment);
 
+    CompletableFuture<Void> editMessage(SentMessage message, OutMessage newMessage);
+
     CompletableFuture<String> getName(IdentityHolder identity);
 
 }

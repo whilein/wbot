@@ -20,6 +20,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.Nullable;
 import wbot.platform.Platform;
 
 import java.util.concurrent.CompletableFuture;
@@ -37,6 +38,10 @@ public class SentMessage {
     long messageId;
 
     @Getter
+    @Nullable
+    Long chatMessageId;
+
+    @Getter
     OutMessage outMessage;
 
     public CompletableFuture<Void> editText(String text) {
@@ -47,4 +52,7 @@ public class SentMessage {
         return platform.editAttachment(this, attachment);
     }
 
+    public CompletableFuture<Void> editMessage(OutMessage newMessage) {
+        return platform.editMessage(this, newMessage);
+    }
 }

@@ -23,6 +23,7 @@ import lombok.Value;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.jackson.Jacksonized;
 import lombok.val;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import wbot.event.EventDispatcher;
 import wbot.http.EmbeddableContent;
@@ -36,6 +37,9 @@ import wbot.platform.PlatformType;
 import wbot.platform.vk.mapper.VkInlineKeyboardMapper;
 import wbot.platform.vk.mapper.VkMessageMapper;
 import wbot.platform.vk.method.VkDocsSave;
+import wbot.platform.vk.method.VkMessagesEdit;
+import wbot.platform.vk.method.VkMessagesSend;
+import wbot.platform.vk.method.VkMethod;
 import wbot.platform.vk.model.Document;
 import wbot.platform.vk.model.Forward;
 import wbot.platform.vk.model.Group;
@@ -155,7 +159,7 @@ public final class VkPlatform implements Platform {
         val peerId = chat.getValue();
 
         val sendMessage = vkClient.messagesSend()
-                .peerId(peerId)
+                .peerIds(peerId)
                 .message(message.getText());
 
         val reply = message.getReply();
@@ -174,7 +178,7 @@ public final class VkPlatform implements Platform {
 
         Attachment attachment;
 
-        CompletableFuture<Long> cf;
+        CompletableFuture<VkMessagesSend.Result[]> cf;
         if ((attachment = message.getAttachment()) != null) {
             cf = uploadAttachment(attachment)
                     .thenCompose(attachmentValue -> sendMessage.attachment(attachmentValue)
@@ -183,7 +187,14 @@ public final class VkPlatform implements Platform {
             cf = sendMessage.make();
         }
 
-        return cf.thenApply(messageId -> new SentMessage(this, messageId, message));
+        return cf.thenApply(results -> {
+            val result = results[0];
+            return new SentMessage(this,
+                    result.getMessageId(),
+                    result.getCmId(),
+                    message
+            );
+        });
     }
 
     private CompletableFuture<String> uploadAttachment(Attachment attachment) {
@@ -202,19 +213,73 @@ public final class VkPlatform implements Platform {
     @Override
     public CompletableFuture<Void> editAttachment(SentMessage message, Attachment attachment) {
         return FutureUtils.asVoid(uploadAttachment(attachment)
-                .thenCompose(v -> vkClient.messagesEdit()
-                        .messageId(message.getMessageId())
-                        .peerId(message.getOutMessage().getChat().getValue())
-                        .attachment(v)
-                        .make()));
+                .thenCompose(v -> makeMinimalMessageEdit(message, null, attachment)));
     }
 
     @Override
     public CompletableFuture<Void> editText(SentMessage message, String newText) {
-        return FutureUtils.asVoid(vkClient.messagesEdit()
-                .messageId(message.getMessageId())
-                .message(newText)
-                .make());
+        return FutureUtils.asVoid(makeMinimalMessageEdit(message, newText, null));
+    }
+
+    @Override
+    public CompletableFuture<Void> editMessage(SentMessage message, OutMessage newMessage) {
+        return FutureUtils.asVoid(makeMessageEdit(message, newMessage));
+    }
+
+    private CompletableFuture<Integer> makeMessageEdit(SentMessage message, OutMessage newMessage) {
+        return newMinimalMessageEdit(message, newMessage.getText(), newMessage.getAttachment())
+                .thenCompose(messagesEdit -> {
+                    val keyboard = newMessage.getKeyboard();
+                    if (keyboard != null) {
+                        messagesEdit.keyboard(VkInlineKeyboardMapper.INSTANCE.mapKeyboard(keyboard));
+                    }
+
+                    if (newMessage.isKeepForwardedMessages()) {
+                        messagesEdit.keepForwardMessages(true);
+                    }
+
+                    if (newMessage.isDisableNotification()) {
+                        messagesEdit.disableMentions(true);
+                    }
+
+                    return messagesEdit.make();
+                });
+    }
+
+    private CompletableFuture<Integer> makeMinimalMessageEdit(
+            SentMessage message,
+            @Nullable String newText,
+            @Nullable Attachment attachment
+    ) {
+        return newMinimalMessageEdit(message, newText, attachment)
+                .thenCompose(VkMethod::make);
+    }
+
+    private CompletableFuture<VkMessagesEdit> newMinimalMessageEdit(
+            SentMessage message,
+            @Nullable String text,
+            @Nullable Attachment attachment
+    ) {
+        val messagesEdit = vkClient.messagesEdit()
+                .peerId(message.getOutMessage().getChat().getValue());
+
+        val chatMessageId = message.getChatMessageId();
+        if (chatMessageId != null) {
+            messagesEdit.conversationMessageId(chatMessageId);
+        } else {
+            messagesEdit.messageId(message.getMessageId());
+        }
+
+        if (text != null) {
+            messagesEdit.message(text);
+        }
+
+        if (attachment != null) {
+            return uploadAttachment(attachment)
+                    .thenApply(messagesEdit::attachment);
+        }
+
+        return CompletableFuture.completedFuture(messagesEdit);
     }
 
     private static String getUserName(User user) {

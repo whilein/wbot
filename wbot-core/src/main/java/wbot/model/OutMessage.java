@@ -32,6 +32,8 @@ public class OutMessage {
     String text;
     InlineKeyboard keyboard;
     Attachment attachment;
+    boolean disableNotification;
+    boolean keepForwardedMessages;
 
     public boolean hasAttachment() {
         return attachment != null;
@@ -52,6 +54,12 @@ public class OutMessage {
 
         @Setter
         Attachment attachment;
+
+        @Setter
+        boolean disableNotification = true;
+
+        @Setter
+        boolean keepForwarded = true;
 
         public Builder reply(Identity chat, Long messageId) {
             this.chat = chat;
@@ -95,7 +103,9 @@ public class OutMessage {
                 throw new IllegalStateException("Text is required");
             }
 
-            return new OutMessage(chat, reply, text, keyboard, attachment);
+            return new OutMessage(chat, reply, text, keyboard, attachment,
+                    disableNotification,
+                    keepForwarded);
         }
 
 

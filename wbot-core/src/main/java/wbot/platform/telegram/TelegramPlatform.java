@@ -20,10 +20,12 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.val;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import wbot.event.EventDispatcher;
 import wbot.model.Attachment;
 import wbot.model.IdentityHolder;
+import wbot.model.InlineKeyboard;
 import wbot.model.OutMessage;
 import wbot.model.SentMessage;
 import wbot.platform.Platform;
@@ -114,6 +116,7 @@ public final class TelegramPlatform implements Platform {
         return sendFuture
                 .thenCompose(send -> {
                     send.chatId(peer.getValue());
+                    send.disableNotification(message.isDisableNotification());
 
                     val reply = message.getReply();
                     if (reply != null) {
@@ -127,7 +130,7 @@ public final class TelegramPlatform implements Platform {
 
                     return send.make();
                 })
-                .thenApply(m -> new SentMessage(this, m.getMessageId(), message));
+                .thenApply(m -> new SentMessage(this, m.getMessageId(), m.getMessageId(), message));
     }
 
     @Override
@@ -144,10 +147,32 @@ public final class TelegramPlatform implements Platform {
 
     @Override
     public CompletableFuture<Void> editText(SentMessage message, String text) {
-        val attachment = message.getOutMessage().getAttachment();
+        return FutureUtils.asVoid(makeMinimalEdit(message, text, null));
+    }
+
+    @Override
+    public CompletableFuture<Void> editMessage(SentMessage message, OutMessage newMessage) {
+        return makeMinimalEdit(message, newMessage.getText(), newMessage.getKeyboard())
+                .thenCompose(m -> {
+                    if (newMessage.hasAttachment()) {
+                        // not supported.
+                        logger.warn("Editing a message with an attachment is not supported correctly on this platform.");
+//                        return editAttachment(message, newMessage.getAttachment());
+                    }
+
+                    return CompletableFuture.completedFuture(null);
+                });
+    }
+
+    private CompletableFuture<Message> makeMinimalEdit(
+            SentMessage message,
+            String text,
+            @Nullable InlineKeyboard keyboard
+    ) {
+        val oldAttachment = message.getOutMessage().getAttachment();
 
         TelegramEdit<?> edit;
-        if (attachment == null) {
+        if (oldAttachment == null) {
             edit = telegramClient.editMessageText()
                     .text(text);
         } else {
@@ -155,10 +180,13 @@ public final class TelegramPlatform implements Platform {
                     .caption(text);
         }
 
-        return FutureUtils.asVoid(edit
-                .messageId(message.getMessageId())
+        if (keyboard != null) {
+            edit.replyMarkup(TelegramInlineKeyboardMapper.INSTANCE.mapKeyboard(keyboard));
+        }
+
+        return edit.messageId(message.getMessageId())
                 .chatId(message.getOutMessage().getChat().getValue())
-                .make());
+                .make();
     }
 
     @Override
