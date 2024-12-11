@@ -23,7 +23,7 @@ import wbot.model.InlineKeyboard;
 import wbot.model.InlineKeyboardButton;
 import wbot.platform.vk.model.Keyboard;
 import wbot.platform.vk.model.KeyboardButton;
-import wbot.platform.vk.model.KeyboardTextAction;
+import wbot.platform.vk.model.KeyboardCallbackAction;
 
 import java.util.List;
 
@@ -44,5 +44,5 @@ public interface VkInlineKeyboardMapper {
     KeyboardButton mapKeyboardButton(InlineKeyboardButton keyboardButton);
 
     @Mapping(target = "payload", source = "data")
-    KeyboardTextAction mapKeyboardAction(InlineKeyboardButton keyboardButton);
+    KeyboardCallbackAction mapKeyboardAction(InlineKeyboardButton keyboardButton);
 }

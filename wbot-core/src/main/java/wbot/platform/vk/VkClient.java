@@ -29,6 +29,7 @@ import wbot.platform.vk.method.VkGroupsGetLongPollServer;
 import wbot.platform.vk.method.VkGroupsGetLongPollSettings;
 import wbot.platform.vk.method.VkMessagesEdit;
 import wbot.platform.vk.method.VkMessagesSend;
+import wbot.platform.vk.method.VkMessagesSendEventAnswer;
 import wbot.platform.vk.method.VkMethod;
 import wbot.platform.vk.method.VkPhotosGetMessagesUploadServer;
 import wbot.platform.vk.method.VkPhotosSaveMessagesPhoto;
@@ -89,6 +90,10 @@ public final class VkClient {
 
     public VkMessagesSend messagesSend() {
         return new VkMessagesSend(this);
+    }
+
+    public VkMessagesSendEventAnswer messagesSendEventAnswer() {
+        return new VkMessagesSendEventAnswer(this);
     }
 
     public VkGroupsGetById groupsGetById() {

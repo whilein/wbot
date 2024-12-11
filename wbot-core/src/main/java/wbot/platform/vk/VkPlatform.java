@@ -46,6 +46,7 @@ import wbot.platform.vk.model.Group;
 import wbot.platform.vk.model.Id;
 import wbot.platform.vk.model.Photo;
 import wbot.platform.vk.model.User;
+import wbot.platform.vk.model.update.MessageEvent;
 import wbot.platform.vk.model.update.MessageNew;
 import wbot.platform.vk.model.update.UpdateObject;
 import wbot.util.FutureUtils;
@@ -79,7 +80,19 @@ public final class VkPlatform implements Platform {
             } else {
                 eventDispatcher.message(this, VkMessageMapper.INSTANCE.mapToMessage(message));
             }
+        } else if (object instanceof MessageEvent) {
+            val messageEvent = (MessageEvent) object;
+            eventDispatcher.keyboardCallback(this, VkMessageMapper.INSTANCE.mapToKeyboardCallback(messageEvent));
+            sendCallbackAnswer(messageEvent);
         }
+    }
+
+    private void sendCallbackAnswer(MessageEvent event) {
+        vkClient.messagesSendEventAnswer()
+                .peerId(event.getPeerId())
+                .userId(event.getUserId())
+                .eventId(event.getEventId())
+                .make();
     }
 
     @Value

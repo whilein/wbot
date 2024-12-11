@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import lombok.val;
 import wbot.http.HttpClient;
+import wbot.platform.telegram.method.TelegramAnswerCallbackQuery;
 import wbot.platform.telegram.method.TelegramEditMessageCaption;
 import wbot.platform.telegram.method.TelegramEditMessageMedia;
 import wbot.platform.telegram.method.TelegramEditMessageText;
@@ -89,6 +90,10 @@ public final class TelegramClient {
 
     public TelegramSendMessage sendMessage() {
         return new TelegramSendMessage(this);
+    }
+
+    public TelegramAnswerCallbackQuery answerCallbackQuery() {
+        return new TelegramAnswerCallbackQuery(this);
     }
 
     public <R> CompletableFuture<R> send(TelegramMethod<R> method) {

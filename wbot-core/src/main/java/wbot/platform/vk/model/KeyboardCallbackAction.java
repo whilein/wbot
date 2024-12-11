@@ -28,13 +28,13 @@ import lombok.extern.jackson.Jacksonized;
 @Builder
 @Jacksonized
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class KeyboardTextAction implements KeyboardAction {
+public class KeyboardCallbackAction implements KeyboardAction {
     String label;
     String payload;
 
     @Override
     public String type() {
-        return "text";
+        return "callback";
     }
 
 }

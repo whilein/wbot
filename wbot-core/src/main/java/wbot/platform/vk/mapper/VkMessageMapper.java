@@ -22,6 +22,7 @@ import org.mapstruct.factory.Mappers;
 import wbot.model.InKeyboardCallback;
 import wbot.model.InMessage;
 import wbot.platform.vk.model.Message;
+import wbot.platform.vk.model.update.MessageEvent;
 
 /**
  * @author whilein
@@ -41,5 +42,11 @@ public interface VkMessageMapper {
     @Mapping(target = "chat", source = "peerId")
     @Mapping(target = "data", source = "payload")
     InKeyboardCallback mapToKeyboardCallback(Message message);
+
+    @Mapping(target = "replyMessageId", source = "conversationMessageId")
+    @Mapping(target = "from", source = "userId")
+    @Mapping(target = "chat", source = "peerId")
+    @Mapping(target = "data", expression = "java(String.valueOf(messageEvent.getPayload()))")
+    InKeyboardCallback mapToKeyboardCallback(MessageEvent messageEvent);
 
 }

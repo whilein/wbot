@@ -64,7 +64,14 @@ public final class TelegramPlatform implements Platform {
         CallbackQuery query;
         if ((query = update.getCallbackQuery()) != null) {
             eventDispatcher.keyboardCallback(this, TelegramMessageMapper.INSTANCE.mapToKeyboardCallback(query));
+            sendCallbackAnswer(query);
         }
+    }
+
+    private void sendCallbackAnswer(CallbackQuery query) {
+        telegramClient.answerCallbackQuery()
+                .queryId(query.getId())
+                .make();
     }
 
     @Override
