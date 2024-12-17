@@ -18,6 +18,7 @@ package wbot.platform;
 
 import wbot.model.Attachment;
 import wbot.model.IdentityHolder;
+import wbot.model.InKeyboardCallback;
 import wbot.model.OutMessage;
 import wbot.model.SentMessage;
 
@@ -37,6 +38,8 @@ public interface Platform extends Runnable {
     CompletableFuture<Void> editAttachment(SentMessage message, Attachment attachment);
 
     CompletableFuture<Void> editMessage(SentMessage message, OutMessage newMessage);
+
+    CompletableFuture<Void> editMessage(InKeyboardCallback message, OutMessage newMessage);
 
     CompletableFuture<String> getName(IdentityHolder identity);
 

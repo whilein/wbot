@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import wbot.event.EventDispatcher;
 import wbot.model.Attachment;
 import wbot.model.IdentityHolder;
+import wbot.model.InKeyboardCallback;
 import wbot.model.InlineKeyboard;
 import wbot.model.OutMessage;
 import wbot.model.SentMessage;
@@ -154,30 +155,50 @@ public final class TelegramPlatform implements Platform {
 
     @Override
     public CompletableFuture<Void> editText(SentMessage message, String text) {
-        return FutureUtils.asVoid(makeMinimalEdit(message, text, null));
+        val oldAttachment = message.getOutMessage().getAttachment();
+        val chatId = message.getOutMessage().getChat().getValue();
+
+        return FutureUtils.asVoid(makeMinimalEdit(chatId, message.getMessageId(), text, oldAttachment, null));
     }
 
     @Override
     public CompletableFuture<Void> editMessage(SentMessage message, OutMessage newMessage) {
-        return makeMinimalEdit(message, newMessage.getText(), newMessage.getKeyboard())
-                .thenCompose(m -> {
-                    if (newMessage.hasAttachment()) {
-                        // not supported.
-                        logger.warn("Editing a message with an attachment is not supported correctly on this platform.");
-//                        return editAttachment(message, newMessage.getAttachment());
-                    }
+        val oldAttachment = message.getOutMessage().getAttachment();
+        val chatId = message.getOutMessage().getChat().getValue();
 
-                    return CompletableFuture.completedFuture(null);
-                });
+        return makeMinimalEdit(chatId, message.getMessageId(),
+                newMessage.getText(),
+                oldAttachment,
+                newMessage.getKeyboard()
+        ).thenCompose(m -> {
+            if (newMessage.hasAttachment()) {
+                // not supported.
+                logger.warn("Editing a message with an attachment is not supported correctly on this platform.");
+//                return editAttachment(message, newMessage.getAttachment());
+            }
+
+            return CompletableFuture.completedFuture(null);
+        });
+    }
+
+    @Override
+    public CompletableFuture<Void> editMessage(InKeyboardCallback message, OutMessage newMessage) {
+        val messageId = message.getReplyMessageId();
+        val chatId = message.getChat().getValue();
+
+        return FutureUtils.asVoid(makeMinimalEdit(chatId, messageId,
+                newMessage.getText(),
+                null,
+                newMessage.getKeyboard()));
     }
 
     private CompletableFuture<Message> makeMinimalEdit(
-            SentMessage message,
+            long chatId,
+            long messageId,
             String text,
+            @Nullable Attachment oldAttachment,
             @Nullable InlineKeyboard keyboard
     ) {
-        val oldAttachment = message.getOutMessage().getAttachment();
-
         TelegramEdit<?> edit;
         if (oldAttachment == null) {
             edit = telegramClient.editMessageText()
@@ -191,8 +212,8 @@ public final class TelegramPlatform implements Platform {
             edit.replyMarkup(TelegramInlineKeyboardMapper.INSTANCE.mapKeyboard(keyboard));
         }
 
-        return edit.messageId(message.getMessageId())
-                .chatId(message.getOutMessage().getChat().getValue())
+        return edit.messageId(messageId)
+                .chatId(chatId)
                 .make();
     }
 

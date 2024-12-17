@@ -29,7 +29,9 @@ import wbot.event.EventDispatcher;
 import wbot.http.EmbeddableContent;
 import wbot.http.MultipartContent;
 import wbot.model.Attachment;
+import wbot.model.Identity;
 import wbot.model.IdentityHolder;
+import wbot.model.InKeyboardCallback;
 import wbot.model.OutMessage;
 import wbot.model.SentMessage;
 import wbot.platform.Platform;
@@ -239,8 +241,22 @@ public final class VkPlatform implements Platform {
         return FutureUtils.asVoid(makeMessageEdit(message, newMessage));
     }
 
+    @Override
+    public CompletableFuture<Void> editMessage(InKeyboardCallback message, OutMessage newMessage) {
+        return FutureUtils.asVoid(makeMessageEdit(message.getChat().getIdentity(), message.getReplyMessageId(),
+                newMessage));
+    }
+
     private CompletableFuture<Integer> makeMessageEdit(SentMessage message, OutMessage newMessage) {
-        return newMinimalMessageEdit(message, newMessage.getText(), newMessage.getAttachment())
+        val chat = message.getOutMessage().getChat();
+        val chatMessageId = message.getChatMessageId() == null 
+                ? message.getMessageId() 
+                : message.getChatMessageId();
+        return makeMessageEdit(chat, chatMessageId, newMessage);
+    }
+
+    private CompletableFuture<Integer> makeMessageEdit(Identity chat, long messageId, OutMessage newMessage) {
+        return newMinimalMessageEdit(chat, messageId, newMessage.getText(), newMessage.getAttachment())
                 .thenCompose(messagesEdit -> {
                     val keyboard = newMessage.getKeyboard();
                     if (keyboard != null) {
@@ -269,19 +285,28 @@ public final class VkPlatform implements Platform {
     }
 
     private CompletableFuture<VkMessagesEdit> newMinimalMessageEdit(
-            SentMessage message,
+            SentMessage sentMessage,
+            @Nullable String text,
+            @Nullable Attachment attachment
+    ) {
+        val chatMessageId = sentMessage.getChatMessageId();
+        return newMinimalMessageEdit(
+                sentMessage.getOutMessage().getChat(),
+                chatMessageId == null ? sentMessage.getMessageId() : chatMessageId,
+                text,
+                attachment
+        );
+    }
+
+    private CompletableFuture<VkMessagesEdit> newMinimalMessageEdit(
+            Identity chat,
+            long messageId,
             @Nullable String text,
             @Nullable Attachment attachment
     ) {
         val messagesEdit = vkClient.messagesEdit()
-                .peerId(message.getOutMessage().getChat().getValue());
-
-        val chatMessageId = message.getChatMessageId();
-        if (chatMessageId != null) {
-            messagesEdit.conversationMessageId(chatMessageId);
-        } else {
-            messagesEdit.messageId(message.getMessageId());
-        }
+                .peerId(chat.getValue())
+                .conversationMessageId(messageId);
 
         if (text != null) {
             messagesEdit.message(text);

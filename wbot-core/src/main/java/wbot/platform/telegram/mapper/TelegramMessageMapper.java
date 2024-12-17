@@ -35,7 +35,7 @@ public interface TelegramMessageMapper {
     @Mapping(target = "reply", source = "replyToMessage")
     InMessage mapToMessage(Message message);
 
-    @Mapping(target = "replyMessageId", ignore = true)
+    @Mapping(target = "replyMessageId", source = "message.messageId")
     @Mapping(target = "chat", source = "message.chat")
     InKeyboardCallback mapToKeyboardCallback(CallbackQuery callbackQuery);
 
