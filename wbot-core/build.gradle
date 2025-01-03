@@ -15,11 +15,15 @@
  */
 
 plugins {
-    id 'wbot.java'
+    id 'java-conventions'
+    id 'publishing-conventions'
     id 'com.gorylenko.gradle-git-properties' version '2.4.1'
 }
 
 dependencies {
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
     annotationProcessor libs.mapstruct.processor
     api libs.slf4j.api
     api libs.slf4j.simple

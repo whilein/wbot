@@ -15,16 +15,34 @@
  */
 
 plugins {
-    id 'java-conventions'
-    id 'publishing-conventions'
+    id 'maven-publish'
 }
 
-dependencies {
-    api project(':wbot-core')
+java {
+    withSourcesJar()
+    withJavadocJar()
 }
 
-compileJava {
-    sourceCompatibility = 11
-    targetCompatibility = 11
-    options.compilerArgs.addAll(['--release', '11'])
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+
+            repositories {
+                maven {
+                    url = 'https://maven.pkg.github.com/whilein/wcommander'
+                    name = 'github'
+
+                    credentials {
+                        username = githubUsername
+                        password = githubPassword
+                    }
+                }
+            }
+        }
+    }
 }
