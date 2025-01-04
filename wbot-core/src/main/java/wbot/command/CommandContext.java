@@ -45,6 +45,7 @@ public final class CommandContext implements ArgumentProvider {
 
     int argumentOffset;
 
+    @Getter
     String[] arguments;
 
     @Getter
