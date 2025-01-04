@@ -224,7 +224,7 @@ public final class TelegramPlatform implements Platform {
                     .make()
                     .get();
 
-            logger.info("Waiting for updates in group @" + user.getUsername() + " (id: " + user.getId() + ")");
+            logger.info("Waiting for updates in bot @" + user.getUsername() + " (id: " + user.getId() + ")");
 
             val telegram = new TelegramLongPoll(logger, telegramClient);
             telegram.start(this::handleUpdate);
