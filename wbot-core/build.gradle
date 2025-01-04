@@ -23,13 +23,13 @@ plugins {
 dependencies {
     annotationProcessor libs.mapstruct.processor
     api libs.slf4j.api
-    api libs.slf4j.simple
 
     api platform(libs.jackson.bom)
     api libs.jackson.databind
 
     api libs.mapstruct.runtime
 
+    testImplementation libs.slf4j.simple
     testImplementation libs.mockito
 }
 
