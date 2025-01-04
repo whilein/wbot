@@ -15,15 +15,14 @@
  */
 
 plugins {
-    id 'wbot.java'
+    id 'java-conventions'
+    id 'publishing-conventions'
 }
 
 dependencies {
     api project(':wbot-core')
 }
 
-compileJava {
-    sourceCompatibility = 11
-    targetCompatibility = 11
-    options.compilerArgs.addAll(['--release', '11'])
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
 }

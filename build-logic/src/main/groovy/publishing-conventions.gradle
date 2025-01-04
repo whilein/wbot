@@ -15,24 +15,29 @@
  */
 
 plugins {
-    id 'java-conventions'
-    id 'publishing-conventions'
-    id 'com.gorylenko.gradle-git-properties' version '2.4.1'
-}
-
-dependencies {
-    annotationProcessor libs.mapstruct.processor
-    api libs.slf4j.api
-    api libs.slf4j.simple
-
-    api platform(libs.jackson.bom)
-    api libs.jackson.databind
-
-    api libs.mapstruct.runtime
-
-    testImplementation libs.mockito
+    id 'maven-publish'
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+
+            repositories {
+                maven {
+                    url = 'https://maven.pkg.github.com/whilein/wbot'
+                    name = 'github'
+
+                    credentials {
+                        username = githubUsername
+                        password = githubPassword
+                    }
+                }
+            }
+        }
+    }
 }
