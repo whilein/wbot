@@ -15,6 +15,6 @@
  */
 
 allprojects {
-    group 'io.github.whilein'
+    group 'io.github.whilein.wbot'
     version '0.0.1-SNAPSHOT'
 }
