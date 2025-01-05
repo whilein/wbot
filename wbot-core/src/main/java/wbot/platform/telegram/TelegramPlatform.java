@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import wbot.event.EventDispatcher;
 import wbot.model.Attachment;
 import wbot.model.IdentityHolder;
+import wbot.model.IdentityName;
 import wbot.model.InKeyboardCallback;
 import wbot.model.InlineKeyboard;
 import wbot.model.OutMessage;
@@ -76,10 +77,10 @@ public final class TelegramPlatform implements Platform {
     }
 
     @Override
-    public CompletableFuture<String> getName(IdentityHolder identity) {
+    public CompletableFuture<IdentityName> getName(IdentityHolder identity) {
         if (identity instanceof User) {
             val user = (User) identity;
-            return CompletableFuture.completedFuture(user.getFirstName() + " " + user.getLastName());
+            return CompletableFuture.completedFuture(new IdentityName(user.getFirstName(), user.getLastName()));
         } else if (identity instanceof Chat) {
             throw new IllegalArgumentException("Cannot get display name of chat identity");
         } else {

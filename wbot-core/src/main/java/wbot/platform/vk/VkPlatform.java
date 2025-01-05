@@ -31,6 +31,7 @@ import wbot.http.MultipartContent;
 import wbot.model.Attachment;
 import wbot.model.Identity;
 import wbot.model.IdentityHolder;
+import wbot.model.IdentityName;
 import wbot.model.InKeyboardCallback;
 import wbot.model.OutMessage;
 import wbot.model.SentMessage;
@@ -320,16 +321,16 @@ public final class VkPlatform implements Platform {
         return CompletableFuture.completedFuture(messagesEdit);
     }
 
-    private static String getUserName(User user) {
-        return user.getFirstName() + " " + user.getLastName();
+    private static IdentityName getUserName(User user) {
+        return new IdentityName(user.getFirstName(), user.getLastName());
     }
 
-    private static String getGroupName(Group group) {
-        return group.getName();
+    private static IdentityName getGroupName(Group group) {
+        return new IdentityName(group.getName(), null);
     }
 
     @Override
-    public CompletableFuture<String> getName(IdentityHolder identity) {
+    public CompletableFuture<IdentityName> getName(IdentityHolder identity) {
         if (identity.isChat()) {
             throw new IllegalArgumentException("Cannot get display name of chat identity");
         }
