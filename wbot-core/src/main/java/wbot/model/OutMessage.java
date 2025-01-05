@@ -17,10 +17,13 @@
 package wbot.model;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.Value;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author whilein
@@ -39,8 +42,22 @@ public class OutMessage {
         return attachment != null;
     }
 
+    public @NotNull Builder toBuilder() {
+        return new Builder(
+                chat,
+                reply,
+                text,
+                keyboard,
+                attachment,
+                disableNotification,
+                keepForwardedMessages
+        );
+    }
+
     @Accessors(fluent = true)
     @FieldDefaults(level = AccessLevel.PRIVATE)
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static final class Builder {
 
         Identity chat;
