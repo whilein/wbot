@@ -53,7 +53,7 @@ public interface VkMessageMapper {
 
     default InMessage firstForwardedMessage(Message message) {
         val fwdMessages = message.getFwdMessages();
-        return mapToMessage(fwdMessages.isEmpty()
+        return mapToMessage(fwdMessages == null || fwdMessages.isEmpty()
                 ? message.getReplyMessage()
                 : fwdMessages.get(0));
     }
