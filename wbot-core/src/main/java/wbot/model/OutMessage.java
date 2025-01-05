@@ -116,8 +116,8 @@ public class OutMessage {
                 throw new IllegalStateException("Chat is required");
             }
 
-            if (text == null) {
-                throw new IllegalStateException("Text is required");
+            if (text == null && attachment == null) {
+                throw new IllegalStateException("Text or attachment is required");
             }
 
             return new OutMessage(chat, reply, text, keyboard, attachment,
