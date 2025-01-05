@@ -28,4 +28,5 @@ public class InMessage {
     IdentityHolder from;
     IdentityHolder chat;
     InMessage reply;
+    long date;
 }
