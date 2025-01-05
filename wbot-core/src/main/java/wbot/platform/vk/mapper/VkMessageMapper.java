@@ -16,6 +16,8 @@
 
 package wbot.platform.vk.mapper;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.val;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -32,7 +34,7 @@ public interface VkMessageMapper {
     VkMessageMapper INSTANCE = Mappers.getMapper(VkMessageMapper.class);
 
     @Mapping(target = "id", source = "conversationMessageId")
-    @Mapping(target = "reply", source = "replyMessage")
+    @Mapping(target = "reply", expression = "java(firstForwardedMessage(message))")
     @Mapping(target = "from", source = "fromId")
     @Mapping(target = "chat", source = "peerId")
     InMessage mapToMessage(Message message);
@@ -49,4 +51,10 @@ public interface VkMessageMapper {
     @Mapping(target = "data", expression = "java(String.valueOf(messageEvent.getPayload()))")
     InKeyboardCallback mapToKeyboardCallback(MessageEvent messageEvent);
 
+    default InMessage firstForwardedMessage(Message message) {
+        val fwdMessages = message.getFwdMessages();
+        return mapToMessage(fwdMessages.isEmpty()
+                ? message.getReplyMessage()
+                : fwdMessages.get(0));
+    }
 }
