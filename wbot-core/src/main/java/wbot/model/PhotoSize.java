@@ -1,5 +1,5 @@
 /*
- *    Copyright 2024 Whilein
+ *    Copyright 2025 Whilein
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,19 +14,20 @@
  *    limitations under the License.
  */
 
-package wbot.platform.vk.model.update;
+package wbot.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Builder;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author _Novit_ (novitpw)
  */
-@Value
-@Builder
-@Jacksonized
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class UpdateStub implements UpdateObject {
+public enum PhotoSize {
+
+    MINIMAL,
+    NORMAL,
+    MAXIMUM;
+
+    public static final List<PhotoSize> VALUES = Arrays.asList(PhotoSize.values());
+
 }

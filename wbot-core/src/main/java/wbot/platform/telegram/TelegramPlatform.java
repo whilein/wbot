@@ -23,12 +23,14 @@ import lombok.val;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import wbot.event.EventDispatcher;
+import wbot.http.HttpResponse;
 import wbot.model.Attachment;
 import wbot.model.IdentityHolder;
 import wbot.model.IdentityName;
 import wbot.model.InKeyboardCallback;
 import wbot.model.InlineKeyboard;
 import wbot.model.OutMessage;
+import wbot.model.PhotoSize;
 import wbot.model.SentMessage;
 import wbot.platform.Platform;
 import wbot.platform.PlatformType;
@@ -38,6 +40,7 @@ import wbot.platform.telegram.method.TelegramEdit;
 import wbot.platform.telegram.method.TelegramSend;
 import wbot.platform.telegram.model.CallbackQuery;
 import wbot.platform.telegram.model.Chat;
+import wbot.platform.telegram.model.File;
 import wbot.platform.telegram.model.Message;
 import wbot.platform.telegram.model.Update;
 import wbot.platform.telegram.model.User;
@@ -86,6 +89,32 @@ public final class TelegramPlatform implements Platform {
         } else {
             throw new IllegalArgumentException("Identity platform is not Telegram");
         }
+    }
+
+    @Override
+    public CompletableFuture<HttpResponse> getAvatar(IdentityHolder identity, PhotoSize photoSize) {
+        if (identity.isChat()) {
+            throw new IllegalArgumentException("Cannot get avatar of chat identity");
+        }
+
+        if (!(identity instanceof User)) {
+            throw new IllegalArgumentException("Identity platform is not Telegram");
+        }
+
+        return telegramClient.getUserProfilePhotos()
+                .userId(identity.getValue())
+                .limit(PhotoSize.VALUES.size())
+                .make()
+                .thenCompose(profile -> {
+                    val sizes = profile.getPhotos().get(0);
+                    val firstPhoto = sizes.get(photoSize.ordinal());
+
+                    return telegramClient.getFile()
+                            .fileId(firstPhoto.getFileId())
+                            .make()
+                            .thenApply(File::getFilePath)
+                            .thenCompose(telegramClient::getFile);
+                });
     }
 
     @Override

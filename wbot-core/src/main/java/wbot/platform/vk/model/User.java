@@ -18,6 +18,8 @@ package wbot.platform.vk.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.Accessors;
@@ -30,6 +32,7 @@ import lombok.extern.jackson.Jacksonized;
 @Builder
 @Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class User {
     long id;
     String firstName;
@@ -47,8 +50,8 @@ public class User {
     String photo200Orig;
     @JsonProperty("photo_200")
     String photo200;
-    @JsonProperty("photo_400_orig")
-    String photo400Orig;
+    @JsonProperty("photo_400")
+    String photo400;
     String photoMax;
     String photoMaxOrig;
 }

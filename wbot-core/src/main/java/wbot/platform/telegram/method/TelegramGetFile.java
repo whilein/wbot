@@ -1,5 +1,5 @@
 /*
- *    Copyright 2024 Whilein
+ *    Copyright 2025 Whilein
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,19 +14,21 @@
  *    limitations under the License.
  */
 
-package wbot.platform.vk.model.update;
+package wbot.platform.telegram.method;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Builder;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import wbot.platform.telegram.TelegramClient;
+import wbot.platform.telegram.model.File;
 
 /**
  * @author _Novit_ (novitpw)
  */
-@Value
-@Builder
-@Jacksonized
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class UpdateStub implements UpdateObject {
+public final class TelegramGetFile extends TelegramMethod<File> {
+    public TelegramGetFile(TelegramClient client) {
+        super(client, "getFile", File.class);
+    }
+
+    public TelegramGetFile fileId(String fileId) {
+        params.set("file_id", fileId);
+        return this;
+    }
 }

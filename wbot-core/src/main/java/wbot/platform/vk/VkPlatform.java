@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import wbot.event.EventDispatcher;
 import wbot.http.EmbeddableContent;
+import wbot.http.HttpResponse;
 import wbot.http.MultipartContent;
 import wbot.model.Attachment;
 import wbot.model.Identity;
@@ -34,6 +35,7 @@ import wbot.model.IdentityHolder;
 import wbot.model.IdentityName;
 import wbot.model.InKeyboardCallback;
 import wbot.model.OutMessage;
+import wbot.model.PhotoSize;
 import wbot.model.SentMessage;
 import wbot.platform.Platform;
 import wbot.platform.PlatformType;
@@ -341,7 +343,7 @@ public final class VkPlatform implements Platform {
 
         if (identity.isBot()) {
             return vkClient.groupsGetById()
-                    .groupId(identity.getValue())
+                    .groupIds(identity.getValue())
                     .make()
                     .thenApply(r -> getGroupName(r.getGroups()[0]));
         } else {
@@ -350,6 +352,77 @@ public final class VkPlatform implements Platform {
                     .make()
                     .thenApply(r -> getUserName(r[0]));
         }
+    }
+
+    private static String getUserPhoto(User user, PhotoSize photoSize) {
+        String photo = user.getPhoto100();
+        switch (photoSize) {
+            case NORMAL:
+                photo = user.getPhoto200();
+                break;
+            case MAXIMUM:
+                photo = user.getPhoto400();
+                break;
+        }
+
+        return photo;
+    }
+
+    private static String getGroupPhoto(Group group, PhotoSize photoSize) {
+        String photo = group.getPhoto100();
+        switch (photoSize) {
+            case NORMAL:
+                photo = group.getPhoto200();
+                break;
+            case MAXIMUM:
+                photo = group.getPhoto400();
+                break;
+        }
+
+        return photo;
+    }
+
+    private static String getPhotoSizeField(PhotoSize photoSize) {
+        String size = "photo_100";
+        switch (photoSize) {
+            case NORMAL:
+                size = "photo_200";
+                break;
+            case MAXIMUM:
+                size = "photo_400";
+                break;
+        }
+
+        return size;
+    }
+
+    @Override
+    public CompletableFuture<HttpResponse>  getAvatar(IdentityHolder identity, PhotoSize photoSize) {
+        if (identity.isChat()) {
+            throw new IllegalArgumentException("Cannot get avatar of chat identity");
+        }
+
+        if (!(identity instanceof Id)) {
+            throw new IllegalArgumentException("Identity platform is not VK");
+        }
+
+        CompletableFuture<String> fileFuture;
+
+        if (identity.isBot()) {
+            fileFuture = vkClient.groupsGetById()
+                    .groupIds(identity.getValue())
+                    .fields(getPhotoSizeField(photoSize))
+                    .make()
+                    .thenApply(r -> getGroupPhoto(r.getGroups()[0], photoSize));
+        } else {
+            fileFuture = vkClient.usersGet()
+                    .userIds(identity.getValue())
+                    .fields(getPhotoSizeField(photoSize))
+                    .make()
+                    .thenApply(r -> getUserPhoto(r[0], photoSize));
+        }
+
+        return fileFuture.thenCompose(vkClient::getFile);
     }
 
     @Override

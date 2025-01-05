@@ -46,12 +46,12 @@ public class Group {
     String type;
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
     boolean hasPhoto;
-    @JsonProperty("photo_50")
-    String photo50;
     @JsonProperty("photo_100")
     String photo100;
     @JsonProperty("photo_200")
     String photo200;
+    @JsonProperty("photo_400")
+    String photo400;
     String activity;
     String description;
     int fixedPost;

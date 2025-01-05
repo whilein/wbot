@@ -1,5 +1,5 @@
 /*
- *    Copyright 2024 Whilein
+ *    Copyright 2025 Whilein
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,9 +14,11 @@
  *    limitations under the License.
  */
 
-package wbot.platform.vk.model.update;
+package wbot.platform.telegram.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -27,6 +29,11 @@ import lombok.extern.jackson.Jacksonized;
 @Value
 @Builder
 @Jacksonized
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UpdateStub implements UpdateObject {
+public class File {
+    long fileSize;
+    String fileId;
+    String fileUniqueId;
+    String filePath;
 }

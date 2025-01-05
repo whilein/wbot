@@ -22,6 +22,7 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import lombok.val;
 import wbot.http.HttpClient;
+import wbot.http.HttpResponse;
 import wbot.platform.vk.method.VkDocsGetMessagesUploadServer;
 import wbot.platform.vk.method.VkDocsSave;
 import wbot.platform.vk.method.VkGroupsGetById;
@@ -128,6 +129,10 @@ public final class VkClient {
 
                     return responseOrError.getResponse();
                 });
+    }
+
+    public CompletableFuture<HttpResponse> getFile(String url) {
+        return httpClient.get(url);
     }
 
 }

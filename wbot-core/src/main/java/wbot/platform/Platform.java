@@ -16,11 +16,13 @@
 
 package wbot.platform;
 
+import wbot.http.HttpResponse;
 import wbot.model.Attachment;
 import wbot.model.IdentityHolder;
 import wbot.model.IdentityName;
 import wbot.model.InKeyboardCallback;
 import wbot.model.OutMessage;
+import wbot.model.PhotoSize;
 import wbot.model.SentMessage;
 
 import java.util.concurrent.CompletableFuture;
@@ -43,5 +45,7 @@ public interface Platform extends Runnable {
     CompletableFuture<Void> editMessage(InKeyboardCallback message, OutMessage newMessage);
 
     CompletableFuture<IdentityName> getName(IdentityHolder identity);
+
+    CompletableFuture<HttpResponse> getAvatar(IdentityHolder identity, PhotoSize photoSize);
 
 }
