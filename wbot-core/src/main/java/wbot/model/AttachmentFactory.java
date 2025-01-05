@@ -32,6 +32,7 @@ import wbot.util.ByteArrayOutputStreamEx;
 import wbot.util.MimeUtils;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -79,14 +80,14 @@ public final class AttachmentFactory {
     public Attachment fromImage(
             @NotNull AttachmentType type,
             @NotNull String fileName,
-            @NotNull String format,
+            @NotNull String contentType,
             @NotNull BufferedImage image
     ) {
-        return new BufferedImageAttachment(executor, type, fileName, format, image);
+        return new BufferedImageAttachment(executor, type, fileName, contentType, image);
     }
 
     public Attachment fromImage(AttachmentType type, String format, BufferedImage image) {
-        return fromImage(type, "image." + format, format, image);
+        return fromImage(type, "image." + format, MimeUtils.getContentTypeByExtension(format), image);
     }
 
     @Accessors(fluent = true)
@@ -119,7 +120,7 @@ public final class AttachmentFactory {
 
                 try {
                     val writer = writers.next();
-                    writer.setOutput(content);
+                    writer.setOutput(new MemoryCacheImageOutputStream(content));
 
                     try {
                         writer.write(image);
