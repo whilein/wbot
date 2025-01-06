@@ -177,8 +177,12 @@ public final class VkPlatform implements Platform {
         val peerId = chat.getValue();
 
         val sendMessage = vkClient.messagesSend()
-                .peerIds(peerId)
-                .message(message.getText());
+                .peerIds(peerId);
+
+        val text = message.getText();
+        if (text != null && !text.isEmpty()) {
+            sendMessage.message(message.getText());
+        }
 
         val reply = message.getReply();
         if (reply != null) {
