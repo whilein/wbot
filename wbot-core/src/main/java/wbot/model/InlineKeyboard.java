@@ -20,6 +20,7 @@ import lombok.Value;
 import lombok.experimental.NonFinal;
 import lombok.val;
 import org.jetbrains.annotations.Unmodifiable;
+import wbot.platform.vk.model.KeyboardAction;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +46,11 @@ public class InlineKeyboard {
         }
 
         public Builder button(String label, String data, String color) {
-            rowButtons.add(new InlineKeyboardButton(label, data, color));
+            return button(label, data, color, KeyboardAction.Type.TEXT);
+        }
+
+        public Builder button(String label, String data, String color, KeyboardAction.Type type) {
+            rowButtons.add(new InlineKeyboardButton(label, data, color, type));
             return this;
         }
 

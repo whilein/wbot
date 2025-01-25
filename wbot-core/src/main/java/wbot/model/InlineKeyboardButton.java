@@ -17,6 +17,7 @@
 package wbot.model;
 
 import lombok.Value;
+import wbot.platform.vk.model.KeyboardAction;
 
 /**
  * @author whilein
@@ -26,4 +27,5 @@ public class InlineKeyboardButton {
     String label;
     String data;
     String color;
+    KeyboardAction.Type type;
 }

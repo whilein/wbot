@@ -14,11 +14,27 @@
  *    limitations under the License.
  */
 
-pluginManagement {
-    includeBuild 'build-logic'
-}
+package wbot.platform.vk.model;
 
-rootProject.name = 'wbot'
-include ':wbot-core'
-include ':wbot-java11'
-include ':wbot-test'
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+/**
+ * @author whilein
+ */
+@Value
+@Builder
+@Jacksonized
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class KeyboardTextAction implements KeyboardAction {
+    String label;
+    String payload;
+
+    @Override
+    public String type() {
+        return "text";
+    }
+
+}

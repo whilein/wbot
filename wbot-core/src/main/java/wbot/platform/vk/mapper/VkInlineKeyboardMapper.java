@@ -22,8 +22,10 @@ import org.mapstruct.factory.Mappers;
 import wbot.model.InlineKeyboard;
 import wbot.model.InlineKeyboardButton;
 import wbot.platform.vk.model.Keyboard;
+import wbot.platform.vk.model.KeyboardAction;
 import wbot.platform.vk.model.KeyboardButton;
 import wbot.platform.vk.model.KeyboardCallbackAction;
+import wbot.platform.vk.model.KeyboardTextAction;
 
 import java.util.List;
 
@@ -40,9 +42,21 @@ public interface VkInlineKeyboardMapper {
 
     List<KeyboardButton> mapKeyboardButtons(List<InlineKeyboardButton> keyboardButtons);
 
-    @Mapping(target = "action", source = ".")
+    @Mapping(target = "action", expression = "java(mapKeyboardAction(keyboardButton))")
     KeyboardButton mapKeyboardButton(InlineKeyboardButton keyboardButton);
 
+    default KeyboardAction mapKeyboardAction(InlineKeyboardButton keyboardButton) {
+        if (keyboardButton.getType() == KeyboardAction.Type.CALLBACK) {
+            return mapCallbackAction(keyboardButton);
+        } else {
+            return mapTextAction(keyboardButton);
+        }
+    }
+
     @Mapping(target = "payload", source = "data")
-    KeyboardCallbackAction mapKeyboardAction(InlineKeyboardButton keyboardButton);
+    KeyboardCallbackAction mapCallbackAction(InlineKeyboardButton keyboardButton);
+
+    @Mapping(target = "payload", source = "data")
+    KeyboardTextAction mapTextAction(InlineKeyboardButton keyboardButton);
+
 }

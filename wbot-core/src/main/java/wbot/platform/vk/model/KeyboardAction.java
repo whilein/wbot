@@ -22,6 +22,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author whilein
  */
 public interface KeyboardAction {
+    enum Type {
+        TEXT,
+        CALLBACK
+    }
 
     @JsonProperty("type")
     String type();
