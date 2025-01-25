@@ -48,4 +48,6 @@ public interface Platform extends Runnable {
 
     CompletableFuture<HttpResponse> getAvatar(IdentityHolder identity, PhotoSize photoSize);
 
+    String formatLinkToIdentity(IdentityHolder identity);
+
 }

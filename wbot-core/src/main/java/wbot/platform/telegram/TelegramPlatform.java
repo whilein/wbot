@@ -118,6 +118,15 @@ public final class TelegramPlatform implements Platform {
     }
 
     @Override
+    public String formatLinkToIdentity(IdentityHolder identity) {
+        if (!(identity instanceof User)) {
+            throw new IllegalArgumentException("Identity platform is not Telegram");
+        }
+
+        return "https://t.me/" + ((User) identity).getUsername();
+    }
+
+    @Override
     public PlatformType getType() {
         return PlatformType.TELEGRAM;
     }

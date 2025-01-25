@@ -430,6 +430,15 @@ public final class VkPlatform implements Platform {
     }
 
     @Override
+    public String formatLinkToIdentity(IdentityHolder identity) {
+        if (!(identity instanceof Id)) {
+            throw new IllegalArgumentException("Identity platform is not VK");
+        }
+
+        return "https://vk.com/id" + identity.getValue();
+    }
+
+    @Override
     public void run() {
         try {
             val group = vkClient.groupsGetById()
