@@ -17,8 +17,10 @@
 package wbot.platform.telegram;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.val;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -59,6 +61,10 @@ public final class TelegramPlatform implements Platform {
 
     TelegramClient telegramClient;
     EventDispatcher eventDispatcher;
+
+    @Getter
+    @NonFinal
+    IdentityHolder identity;
 
     private void handleUpdate(Update update) {
         Message message;
@@ -262,6 +268,8 @@ public final class TelegramPlatform implements Platform {
             val user = telegramClient.getMe()
                     .make()
                     .get();
+
+            this.identity = user;
 
             logger.info("Waiting for updates in bot @" + user.getUsername() + " (id: " + user.getId() + ")");
 

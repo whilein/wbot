@@ -18,9 +18,11 @@ package wbot.platform.vk;
 
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.jackson.Jacksonized;
 import lombok.val;
 import org.jetbrains.annotations.Nullable;
@@ -75,6 +77,10 @@ public final class VkPlatform implements Platform {
 
     VkClient vkClient;
     EventDispatcher eventDispatcher;
+
+    @Getter
+    @NonFinal
+    IdentityHolder identity;
 
     private void handleUpdate(UpdateObject object) {
         if (object instanceof MessageNew) {
@@ -446,20 +452,24 @@ public final class VkPlatform implements Platform {
                     .get()
                     .getGroups()[0];
 
+            this.identity = group;
+
+            val groupId = group.getValue();
+
             try {
                 val settings = vkClient.groupsGetLongPollSettings()
-                        .groupId(group.getId())
+                        .groupId(groupId)
                         .make()
                         .get();
 
                 if (!settings.isEnabled()) {
-                    logger.error("LongPoll API is disabled! To enable, follow the link: https://vk.com/club" + group.getId()
+                    logger.error("LongPoll API is disabled! To enable, follow the link: https://vk.com/club" + groupId
                                  + "?act=longpoll_api");
                     return;
                 }
 
                 if (!settings.getEvents().hasAny()) {
-                    logger.error("LongPoll API has no enabled event types. To enable, follow the link: https://vk.com/club" + group.getId()
+                    logger.error("LongPoll API has no enabled event types. To enable, follow the link: https://vk.com/club" + groupId
                                  + "?act=longpoll_api_types");
                     return;
                 }
@@ -468,12 +478,12 @@ public final class VkPlatform implements Platform {
             }
 
             val name = Optional.ofNullable(group.getScreenName())
-                    .map(screenName -> "@" + screenName + " (id: " + group.getId() + ")")
-                    .orElseGet(() -> "@club" + group.getId());
+                    .map(screenName -> "@" + screenName + " (id: " + groupId + ")")
+                    .orElseGet(() -> "@club" + groupId);
 
             logger.info("Waiting for updates in group " + name);
 
-            val longPoll = new VkLongPoll(logger, vkClient, group.getId());
+            val longPoll = new VkLongPoll(logger, vkClient, groupId);
             longPoll.start(this::handleUpdate);
 
             logger.info("LP terminated");

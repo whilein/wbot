@@ -24,6 +24,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import wbot.model.IdentityHolder;
+import wbot.platform.PlatformType;
 
 /**
  * @author _Novit_ (novitpw)
@@ -33,7 +35,7 @@ import lombok.extern.jackson.Jacksonized;
 @Jacksonized
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Group {
+public class Group implements IdentityHolder {
     int id;
     String name;
     String screenName;
@@ -62,4 +64,29 @@ public class Group {
     String status;
     @JsonFormat(shape = JsonFormat.Shape.NUMBER_INT)
     boolean verified;
+
+    @Override
+    public long getValue() {
+        return id;
+    }
+
+    @Override
+    public PlatformType getPlatform() {
+        return PlatformType.VK;
+    }
+
+    @Override
+    public boolean isChat() {
+        return false;
+    }
+
+    @Override
+    public boolean isBot() {
+        return true;
+    }
+
+    @Override
+    public boolean isUser() {
+        return false;
+    }
 }

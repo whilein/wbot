@@ -32,6 +32,8 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface Platform extends Runnable {
 
+    IdentityHolder getIdentity();
+
     PlatformType getType();
 
     CompletableFuture<SentMessage> sendMessage(OutMessage message);
