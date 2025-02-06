@@ -37,6 +37,8 @@ public class OutMessage {
     Attachment attachment;
     boolean disableNotification;
     boolean keepForwardedMessages;
+    Float latitude;
+    Float longitude;
 
     public boolean hasAttachment() {
         return attachment != null;
@@ -50,7 +52,9 @@ public class OutMessage {
                 keyboard,
                 attachment,
                 disableNotification,
-                keepForwardedMessages
+                keepForwardedMessages,
+                latitude,
+                longitude
         );
     }
 
@@ -77,6 +81,12 @@ public class OutMessage {
 
         @Setter
         boolean keepForwarded = true;
+
+        @Setter
+        Float latitude;
+
+        @Setter
+        Float longitude;
 
         public Builder reply(Identity chat, Long messageId) {
             this.chat = chat;
@@ -122,7 +132,9 @@ public class OutMessage {
 
             return new OutMessage(chat, reply, text, keyboard, attachment,
                     disableNotification,
-                    keepForwarded);
+                    keepForwarded,
+                    latitude,
+                    longitude);
         }
 
 

@@ -204,6 +204,16 @@ public final class VkPlatform implements Platform {
             sendMessage.keyboard(VkInlineKeyboardMapper.INSTANCE.mapKeyboard(keyboard));
         }
 
+        val latitude = message.getLatitude();
+        if (latitude != null) {
+            sendMessage.latitude(latitude);
+        }
+
+        val longitude = message.getLongitude();
+        if (longitude != null) {
+            sendMessage.longitude(longitude);
+        }
+
         Attachment attachment;
 
         CompletableFuture<VkMessagesSend.Result[]> cf;
@@ -282,6 +292,16 @@ public final class VkPlatform implements Platform {
 
                     if (newMessage.isDisableNotification()) {
                         messagesEdit.disableMentions(true);
+                    }
+
+                    val latitude = newMessage.getLatitude();
+                    if (latitude != null) {
+                        messagesEdit.latitude(latitude);
+                    }
+
+                    val longitude = newMessage.getLongitude();
+                    if (longitude != null) {
+                        messagesEdit.longitude(longitude);
                     }
 
                     return messagesEdit.make();
