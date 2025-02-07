@@ -75,7 +75,9 @@ public final class VkPlatform implements Platform {
 
     Logger logger;
 
+    @Getter
     VkClient vkClient;
+
     EventDispatcher eventDispatcher;
 
     @Getter

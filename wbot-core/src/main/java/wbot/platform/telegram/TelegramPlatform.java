@@ -59,7 +59,9 @@ public final class TelegramPlatform implements Platform {
 
     Logger logger;
 
+    @Getter
     TelegramClient telegramClient;
+
     EventDispatcher eventDispatcher;
 
     @Getter

@@ -135,4 +135,9 @@ public final class VkMessagesSend extends VkMethod<VkMessagesSend.Result[]> {
         return this;
     }
 
+    public VkMessagesSend stickerId(int stickerId) {
+        params.set("sticker_id", stickerId);
+        return this;
+    }
+
 }
