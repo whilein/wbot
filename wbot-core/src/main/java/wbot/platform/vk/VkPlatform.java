@@ -16,6 +16,11 @@
 
 package wbot.platform.vk;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -57,12 +62,6 @@ import wbot.platform.vk.model.update.MessageEvent;
 import wbot.platform.vk.model.update.MessageNew;
 import wbot.platform.vk.model.update.UpdateObject;
 import wbot.util.FutureUtils;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 /**
  * @author whilein
@@ -253,7 +252,7 @@ public final class VkPlatform implements Platform {
     @Override
     public CompletableFuture<Void> editAttachment(SentMessage message, Attachment attachment) {
         return FutureUtils.asVoid(uploadAttachment(attachment)
-                .thenCompose(v -> makeMinimalMessageEdit(message, null, attachment)));
+                .thenCompose(__ -> makeMinimalMessageEdit(message, null, attachment)));
     }
 
     @Override
@@ -272,15 +271,16 @@ public final class VkPlatform implements Platform {
                 newMessage));
     }
 
-    private CompletableFuture<Integer> makeMessageEdit(SentMessage message, OutMessage newMessage) {
+    private CompletableFuture<?> makeMessageEdit(SentMessage message, OutMessage newMessage) {
         val chat = message.getOutMessage().getChat();
         val chatMessageId = message.getChatMessageId() == null 
                 ? message.getMessageId() 
                 : message.getChatMessageId();
+
         return makeMessageEdit(chat, chatMessageId, newMessage);
     }
 
-    private CompletableFuture<Integer> makeMessageEdit(Identity chat, long messageId, OutMessage newMessage) {
+    private CompletableFuture<?> makeMessageEdit(Identity chat, long messageId, OutMessage newMessage) {
         return newMinimalMessageEdit(chat, messageId, newMessage.getText(), newMessage.getAttachment())
                 .thenCompose(messagesEdit -> {
                     val keyboard = newMessage.getKeyboard();
@@ -310,29 +310,6 @@ public final class VkPlatform implements Platform {
                 });
     }
 
-    private CompletableFuture<Integer> makeMinimalMessageEdit(
-            SentMessage message,
-            @Nullable String newText,
-            @Nullable Attachment attachment
-    ) {
-        return newMinimalMessageEdit(message, newText, attachment)
-                .thenCompose(VkMethod::make);
-    }
-
-    private CompletableFuture<VkMessagesEdit> newMinimalMessageEdit(
-            SentMessage sentMessage,
-            @Nullable String text,
-            @Nullable Attachment attachment
-    ) {
-        val chatMessageId = sentMessage.getChatMessageId();
-        return newMinimalMessageEdit(
-                sentMessage.getOutMessage().getChat(),
-                chatMessageId == null ? sentMessage.getMessageId() : chatMessageId,
-                text,
-                attachment
-        );
-    }
-
     private CompletableFuture<VkMessagesEdit> newMinimalMessageEdit(
             Identity chat,
             long messageId,
@@ -353,6 +330,24 @@ public final class VkPlatform implements Platform {
         }
 
         return CompletableFuture.completedFuture(messagesEdit);
+    }
+
+    private CompletableFuture<?> makeMinimalMessageEdit(
+            SentMessage message,
+            @Nullable String newText,
+            @Nullable Attachment newAttachment
+    ) {
+        if (newText == null && newAttachment == null) {
+            throw new IllegalArgumentException("Both text and attachment are null");
+        }
+
+        val chat = message.getOutMessage().getChat();
+        val chatMessageId = message.getChatMessageId() == null
+                ? message.getMessageId()
+                : message.getChatMessageId();
+
+        return newMinimalMessageEdit(chat, chatMessageId, newText, null)
+                .thenCompose(VkMethod::make);
     }
 
     private static IdentityName getUserName(User user) {

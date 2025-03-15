@@ -30,7 +30,12 @@ public final class TelegramEditMessageMedia extends TelegramEdit<TelegramEditMes
     }
 
     public TelegramEditMessageMedia media(String type, String filename, EmbeddableContent attachment) {
-        params.set("media", new InputMedia(type, "attach://1"));
+        return media(type, filename, attachment, null);
+    }
+
+
+    public TelegramEditMessageMedia media(String type, String filename, EmbeddableContent attachment, String caption) {
+        params.set("media", new InputMedia(type, "attach://1", caption));
         params.setFile("1", filename, attachment);
         return this;
     }

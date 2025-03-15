@@ -16,13 +16,13 @@
 
 package wbot.platform.telegram;
 
+import java.util.concurrent.CompletableFuture;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.val;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import wbot.event.EventDispatcher;
 import wbot.http.HttpResponse;
@@ -38,7 +38,6 @@ import wbot.platform.Platform;
 import wbot.platform.PlatformType;
 import wbot.platform.telegram.mapper.TelegramInlineKeyboardMapper;
 import wbot.platform.telegram.mapper.TelegramMessageMapper;
-import wbot.platform.telegram.method.TelegramEdit;
 import wbot.platform.telegram.method.TelegramSend;
 import wbot.platform.telegram.model.CallbackQuery;
 import wbot.platform.telegram.model.Chat;
@@ -47,8 +46,6 @@ import wbot.platform.telegram.model.Message;
 import wbot.platform.telegram.model.Update;
 import wbot.platform.telegram.model.User;
 import wbot.util.FutureUtils;
-
-import java.util.concurrent.CompletableFuture;
 
 /**
  * @author whilein
@@ -202,66 +199,71 @@ public final class TelegramPlatform implements Platform {
 
     @Override
     public CompletableFuture<Void> editText(SentMessage message, String text) {
-        val oldAttachment = message.getOutMessage().getAttachment();
-        val chatId = message.getOutMessage().getChat().getValue();
+        val oldMessage = message.getOutMessage();
 
-        return FutureUtils.asVoid(makeMinimalEdit(chatId, message.getMessageId(), text, oldAttachment, null));
+        return editMessageContent(message.getMessageId(), oldMessage.getChat().getValue(),
+                text,
+                oldMessage.getAttachment(),
+                null,
+                null);
     }
 
     @Override
     public CompletableFuture<Void> editMessage(SentMessage message, OutMessage newMessage) {
-        val oldAttachment = message.getOutMessage().getAttachment();
-        val chatId = message.getOutMessage().getChat().getValue();
+        val oldMessage = message.getOutMessage();
 
-        return makeMinimalEdit(chatId, message.getMessageId(),
+        return editMessageContent(message.getMessageId(), oldMessage.getChat().getValue(),
                 newMessage.getText(),
-                oldAttachment,
-                newMessage.getKeyboard()
-        ).thenCompose(m -> {
-            if (newMessage.hasAttachment()) {
-                // not supported.
-                logger.warn("Editing a message with an attachment is not supported correctly on this platform.");
-//                return editAttachment(message, newMessage.getAttachment());
-            }
-
-            return CompletableFuture.completedFuture(null);
-        });
+                oldMessage.getAttachment(),
+                newMessage.getAttachment(),
+                newMessage.getKeyboard());
     }
 
     @Override
-    public CompletableFuture<Void> editMessage(InKeyboardCallback message, OutMessage newMessage) {
-        val messageId = message.getReplyMessageId();
-        val chatId = message.getChat().getValue();
-
-        return FutureUtils.asVoid(makeMinimalEdit(chatId, messageId,
+    public CompletableFuture<Void> editMessage(InKeyboardCallback keyboardCallback, OutMessage newMessage) {
+        return editMessageContent(keyboardCallback.getReplyMessageId(), keyboardCallback.getChat().getValue(),
                 newMessage.getText(),
                 null,
-                newMessage.getKeyboard()));
+                newMessage.getAttachment(),
+                newMessage.getKeyboard());
     }
 
-    private CompletableFuture<Message> makeMinimalEdit(
-            long chatId,
+    private CompletableFuture<Void> editMessageContent(
             long messageId,
+            long chatId,
             String text,
-            @Nullable Attachment oldAttachment,
-            @Nullable InlineKeyboard keyboard
+            Attachment oldAttachment,
+            Attachment attachment,
+            InlineKeyboard keyboard
     ) {
-        TelegramEdit<?> edit;
-        if (oldAttachment == null) {
-            edit = telegramClient.editMessageText()
-                    .text(text);
-        } else {
-            edit = telegramClient.editMessageCaption()
-                    .caption(text);
+        if (attachment != null) {
+            val editMessageMedia = telegramClient.editMessageMedia()
+                    .messageId(messageId)
+                    .chatId(chatId);
+
+            if (keyboard != null) {
+                editMessageMedia.replyMarkup(TelegramInlineKeyboardMapper.INSTANCE.mapKeyboard(keyboard));
+            }
+
+            val type = attachment.type().toString().toLowerCase();
+
+            return FutureUtils.asVoid(attachment.createContent()
+                    .thenCompose(content -> editMessageMedia
+                            .media(type, attachment.fileName(), content, text)
+                            .make()));
         }
+
+        val telegramEdit = (oldAttachment == null)
+                ? telegramClient.editMessageText().text(text)
+                : telegramClient.editMessageCaption().caption(text);
 
         if (keyboard != null) {
-            edit.replyMarkup(TelegramInlineKeyboardMapper.INSTANCE.mapKeyboard(keyboard));
+            telegramEdit.replyMarkup(TelegramInlineKeyboardMapper.INSTANCE.mapKeyboard(keyboard));
         }
 
-        return edit.messageId(messageId)
+        return FutureUtils.asVoid(telegramEdit.messageId(messageId)
                 .chatId(chatId)
-                .make();
+                .make());
     }
 
     @Override
