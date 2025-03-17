@@ -18,6 +18,8 @@ package wbot.model;
 
 import lombok.Value;
 
+import java.util.List;
+
 /**
  * @author whilein
  */
@@ -28,5 +30,6 @@ public class InMessage {
     IdentityHolder from;
     IdentityHolder chat;
     InMessage reply;
+    List<InMessage> forwarded;
     long date;
 }

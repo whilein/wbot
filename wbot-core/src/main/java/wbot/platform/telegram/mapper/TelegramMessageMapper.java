@@ -18,11 +18,15 @@ package wbot.platform.telegram.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import wbot.model.InKeyboardCallback;
 import wbot.model.InMessage;
 import wbot.platform.telegram.model.CallbackQuery;
 import wbot.platform.telegram.model.Message;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author whilein
@@ -33,10 +37,21 @@ public interface TelegramMessageMapper {
 
     @Mapping(target = "id", source = "messageId")
     @Mapping(target = "reply", source = "replyToMessage")
+    @Mapping(target = "forwarded", source = "message", qualifiedByName = "mapReplyToForwardedMessage")
     InMessage mapToMessage(Message message);
 
     @Mapping(target = "replyMessageId", source = "message.messageId")
     @Mapping(target = "chat", source = "message.chat")
     InKeyboardCallback mapToKeyboardCallback(CallbackQuery callbackQuery);
+
+    @Named("mapReplyToForwardedMessage")
+    default List<InMessage> mapReplyToForwardedMessage(Message message) {
+        Message replyToMessage;
+        if ((replyToMessage = message.getReplyToMessage()) != null) {
+            return Collections.singletonList(mapToMessage(replyToMessage));
+        }
+
+        return Collections.emptyList();
+    }
 
 }

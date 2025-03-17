@@ -16,15 +16,19 @@
 
 package wbot.platform.vk.mapper;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.val;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import wbot.model.InKeyboardCallback;
 import wbot.model.InMessage;
 import wbot.platform.vk.model.Message;
 import wbot.platform.vk.model.update.MessageEvent;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author whilein
@@ -34,7 +38,8 @@ public interface VkMessageMapper {
     VkMessageMapper INSTANCE = Mappers.getMapper(VkMessageMapper.class);
 
     @Mapping(target = "id", source = "conversationMessageId")
-    @Mapping(target = "reply", expression = "java(firstForwardedMessage(message))")
+    @Mapping(target = "reply", source = "message", qualifiedByName = "mapFirstForwardedMessage")
+    @Mapping(target = "forwarded", source = "message", qualifiedByName = "mapForwardedMessages")
     @Mapping(target = "from", source = "fromId")
     @Mapping(target = "chat", source = "peerId")
     InMessage mapToMessage(Message message);
@@ -51,10 +56,34 @@ public interface VkMessageMapper {
     @Mapping(target = "data", expression = "java(String.valueOf(messageEvent.getPayload()))")
     InKeyboardCallback mapToKeyboardCallback(MessageEvent messageEvent);
 
-    default InMessage firstForwardedMessage(Message message) {
+    @Named("mapFirstForwardedMessage")
+    default InMessage mapFirstForwardedMessage(Message message) {
         val fwdMessages = message.getFwdMessages();
-        return mapToMessage(fwdMessages == null || fwdMessages.isEmpty()
-                ? message.getReplyMessage()
-                : fwdMessages.get(0));
+        if (fwdMessages == null || fwdMessages.isEmpty()) {
+            return mapToMessage(message.getReplyMessage());
+        }
+
+        return mapToMessage(fwdMessages.get(0));
     }
+
+    @Named("mapForwardedMessages")
+    default List<InMessage> mapForwardedMessages(Message message) {
+        val fwdMessages = message.getFwdMessages();
+        if (fwdMessages != null && !fwdMessages.isEmpty()) {
+            val result = new ArrayList<InMessage>(fwdMessages.size());
+            for (val fwdMessage : fwdMessages) {
+                result.add(mapToMessage(fwdMessage));
+            }
+
+            return result;
+        }
+
+        Message replyMessage;
+        if ((replyMessage = message.getReplyMessage()) != null) {
+            return Collections.singletonList(mapToMessage(replyMessage));
+        }
+
+        return Collections.emptyList();
+    }
+
 }
