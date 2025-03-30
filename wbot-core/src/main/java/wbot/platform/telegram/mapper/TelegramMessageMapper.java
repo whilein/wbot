@@ -38,6 +38,8 @@ public interface TelegramMessageMapper {
     @Mapping(target = "id", source = "messageId")
     @Mapping(target = "reply", source = "replyToMessage")
     @Mapping(target = "forwarded", source = "message", qualifiedByName = "mapReplyToForwardedMessage")
+    @Mapping(target = "ref", source = ".", qualifiedByName = "mapToRef")
+    @Mapping(target = "text", source = ".", qualifiedByName = "mapText")
     InMessage mapToMessage(Message message);
 
     @Mapping(target = "replyMessageId", source = "message.messageId")
@@ -52,6 +54,18 @@ public interface TelegramMessageMapper {
         }
 
         return Collections.emptyList();
+    }
+
+    @Named("mapToRef")
+    default Object mapToRef(Message message) {
+        return message;
+    }
+
+    @Named("mapText")
+    default String mapText(Message message) {
+        return message.getText() == null
+                ? message.getCaption()
+                : message.getText();
     }
 
 }

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2024 Whilein
+ *    Copyright 2025 Whilein
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,23 +17,13 @@
 package wbot.model;
 
 import lombok.Value;
-import org.jetbrains.annotations.ApiStatus;
-
-import java.util.List;
 
 /**
- * @author whilein
+ * @author _Novit_ (novitpw)
  */
 @Value
-public class InMessage {
-    long id;
-    String text;
-    IdentityHolder from;
-    IdentityHolder chat;
-    InMessage reply;
-    List<InMessage> forwarded;
-    long date;
-
-    @ApiStatus.Internal
-    Object ref;
+public class Photo implements ImageDimensions {
+    String url;
+    int width;
+    int height;
 }

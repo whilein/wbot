@@ -132,8 +132,12 @@ public final class TelegramClient {
                 });
     }
 
-    public CompletableFuture<HttpResponse> getFile(String type) {
-        return httpClient.get(fileApiUrl + "/" + type);
+    public CompletableFuture<HttpResponse> getFile(String path) {
+        return httpClient.get(getUrlToFile(path));
+    }
+
+    public String getUrlToFile(String path) {
+        return fileApiUrl + "/" + path;
     }
 
 }

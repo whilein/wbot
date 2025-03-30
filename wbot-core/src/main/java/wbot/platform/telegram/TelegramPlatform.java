@@ -16,7 +16,6 @@
 
 package wbot.platform.telegram;
 
-import java.util.concurrent.CompletableFuture;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -26,26 +25,19 @@ import lombok.val;
 import org.slf4j.Logger;
 import wbot.event.EventDispatcher;
 import wbot.http.HttpResponse;
-import wbot.model.Attachment;
-import wbot.model.IdentityHolder;
-import wbot.model.IdentityName;
-import wbot.model.InKeyboardCallback;
-import wbot.model.InlineKeyboard;
-import wbot.model.OutMessage;
 import wbot.model.PhotoSize;
-import wbot.model.SentMessage;
+import wbot.model.*;
 import wbot.platform.Platform;
 import wbot.platform.PlatformType;
 import wbot.platform.telegram.mapper.TelegramInlineKeyboardMapper;
 import wbot.platform.telegram.mapper.TelegramMessageMapper;
 import wbot.platform.telegram.method.TelegramSend;
-import wbot.platform.telegram.model.CallbackQuery;
-import wbot.platform.telegram.model.Chat;
-import wbot.platform.telegram.model.File;
-import wbot.platform.telegram.model.Message;
-import wbot.platform.telegram.model.Update;
-import wbot.platform.telegram.model.User;
+import wbot.platform.telegram.model.*;
 import wbot.util.FutureUtils;
+
+import java.util.Comparator;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 
 /**
  * @author whilein
@@ -264,6 +256,53 @@ public final class TelegramPlatform implements Platform {
         return FutureUtils.asVoid(telegramEdit.messageId(messageId)
                 .chatId(chatId)
                 .make());
+    }
+
+    @Override
+    public CompletableFuture<Photo> getPhoto(
+            InMessage message,
+            Predicate<ImageDimensions> filter,
+            Comparator<ImageDimensions> maxComparator
+    ) {
+        if (!(message.getRef() instanceof Message)) {
+            throw new IllegalArgumentException("Source platform is not Telegram");
+        }
+
+        val ref = (Message) message.getRef();
+        val bestPhoto = ref.getPhoto().stream()
+                .map(TelegramPlatformPhotoDimensions::new)
+                .filter(filter)
+                .max(maxComparator)
+                .orElse(null);
+
+        if (bestPhoto == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        val photoSize = bestPhoto.photoSize;
+        return telegramClient.getFile()
+                .fileId(photoSize.getFileId())
+                .make()
+                .thenApply(file -> new Photo(
+                        telegramClient.getUrlToFile(file.getFilePath()),
+                        photoSize.getWidth(),
+                        photoSize.getHeight()));
+    }
+
+    @FieldDefaults(makeFinal = true)
+    @RequiredArgsConstructor
+    private static class TelegramPlatformPhotoDimensions implements ImageDimensions {
+        wbot.platform.telegram.model.PhotoSize photoSize;
+
+        @Override
+        public int getWidth() {
+            return photoSize.getWidth();
+        }
+
+        @Override
+        public int getHeight() {
+            return photoSize.getHeight();
+        }
     }
 
     @Override

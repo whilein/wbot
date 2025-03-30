@@ -23,6 +23,8 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
+
 /**
  * @author whilein
  */
@@ -40,5 +42,7 @@ public class Message {
     long date;
     long forwardDate;
     String text;
+    String caption;
     Message replyToMessage;
+    List<PhotoSize> photo;
 }

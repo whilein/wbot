@@ -17,15 +17,11 @@
 package wbot.platform;
 
 import wbot.http.HttpResponse;
-import wbot.model.Attachment;
-import wbot.model.IdentityHolder;
-import wbot.model.IdentityName;
-import wbot.model.InKeyboardCallback;
-import wbot.model.OutMessage;
-import wbot.model.PhotoSize;
-import wbot.model.SentMessage;
+import wbot.model.*;
 
+import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 
 /**
  * @author whilein
@@ -52,4 +48,6 @@ public interface Platform extends Runnable {
 
     String formatLinkToIdentity(IdentityHolder identity);
 
+    CompletableFuture<Photo> getPhoto(InMessage message, Predicate<ImageDimensions> filter,
+                                      Comparator<ImageDimensions> sizeComparator);
 }
