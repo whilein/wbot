@@ -42,6 +42,7 @@ public interface VkMessageMapper {
     @Mapping(target = "forwarded", source = "message", qualifiedByName = "mapForwardedMessages")
     @Mapping(target = "from", source = "fromId")
     @Mapping(target = "chat", source = "peerId")
+    @Mapping(target = "ref", source = ".", qualifiedByName = "mapToRef")
     InMessage mapToMessage(Message message);
 
     @Mapping(target = "replyMessageId", source = "conversationMessageId")
@@ -84,6 +85,11 @@ public interface VkMessageMapper {
         }
 
         return Collections.emptyList();
+    }
+
+    @Named("mapToRef")
+    default Object mapToRef(Message message) {
+        return message;
     }
 
 }

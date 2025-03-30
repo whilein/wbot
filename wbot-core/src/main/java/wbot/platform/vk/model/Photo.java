@@ -23,6 +23,8 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
+
 /**
  * @author whilein
  */
@@ -36,4 +38,17 @@ public class Photo {
     long albumId;
     Id ownerId;
     long date;
+    List<Size> sizes;
+
+    @Value
+    @Builder
+    @Jacksonized
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Size {
+        int height;
+        int width;
+        String type;
+        String url;
+    }
+
 }

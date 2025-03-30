@@ -21,3 +21,4 @@ pluginManagement {
 rootProject.name = 'wbot'
 include ':wbot-core'
 include ':wbot-java11'
+include ':wbot-test'

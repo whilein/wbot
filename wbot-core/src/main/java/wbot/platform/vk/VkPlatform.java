@@ -16,20 +16,10 @@
 
 package wbot.platform.vk;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.jackson.Jacksonized;
-import lombok.val;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import wbot.event.EventDispatcher;
@@ -37,13 +27,8 @@ import wbot.http.EmbeddableContent;
 import wbot.http.HttpResponse;
 import wbot.http.MultipartContent;
 import wbot.model.Attachment;
-import wbot.model.Identity;
-import wbot.model.IdentityHolder;
-import wbot.model.IdentityName;
-import wbot.model.InKeyboardCallback;
-import wbot.model.OutMessage;
-import wbot.model.PhotoSize;
-import wbot.model.SentMessage;
+import wbot.model.*;
+import wbot.model.Photo;
 import wbot.platform.Platform;
 import wbot.platform.PlatformType;
 import wbot.platform.vk.mapper.VkInlineKeyboardMapper;
@@ -52,16 +37,19 @@ import wbot.platform.vk.method.VkDocsSave;
 import wbot.platform.vk.method.VkMessagesEdit;
 import wbot.platform.vk.method.VkMessagesSend;
 import wbot.platform.vk.method.VkMethod;
-import wbot.platform.vk.model.Document;
-import wbot.platform.vk.model.Forward;
-import wbot.platform.vk.model.Group;
-import wbot.platform.vk.model.Id;
-import wbot.platform.vk.model.Photo;
-import wbot.platform.vk.model.User;
+import wbot.platform.vk.model.*;
 import wbot.platform.vk.model.update.MessageEvent;
 import wbot.platform.vk.model.update.MessageNew;
 import wbot.platform.vk.model.update.UpdateObject;
 import wbot.util.FutureUtils;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.function.Predicate;
 
 /**
  * @author whilein
@@ -155,7 +143,7 @@ public final class VkPlatform implements Platform {
     }
 
 
-    private CompletableFuture<Photo> uploadPhoto(Attachment photo) {
+    private CompletableFuture<wbot.platform.vk.model.Photo> uploadPhoto(Attachment photo) {
         return vkClient.photosGetMessagesUploadServer().make()
                 .thenCompose(result -> upload(photo, result.getUploadUrl(), PhotoUploadResult.class))
                 .thenCompose(result -> vkClient.photosSaveMessagesPhoto()
@@ -459,6 +447,58 @@ public final class VkPlatform implements Platform {
         }
 
         return "https://vk.com/id" + identity.getValue();
+    }
+
+    @Override
+    public CompletableFuture<Photo> getPhoto(
+            InMessage message,
+            Predicate<ImageDimensions> filter,
+            Comparator<ImageDimensions> comparator
+    ) {
+        if (!(message.getRef() instanceof Message)) {
+            throw new IllegalArgumentException("Source platform is not Telegram");
+        }
+
+        val ref = (Message) message.getRef();
+        val photo = ref.getAttachments().stream()
+                .filter(attachment -> attachment.getType() == wbot.platform.vk.model.Attachment.Type.PHOTO)
+                .map(wbot.platform.vk.model.Attachment::getPhoto)
+                .findFirst()
+                .orElse(null);
+
+        if (photo == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        val bestPhoto = photo.getSizes().stream()
+                .map(VkPlatformPhotoDimensions::new)
+                .filter(filter)
+                .max(comparator)
+                .orElse(null);
+
+        if (bestPhoto == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        val size = bestPhoto.size;
+        return CompletableFuture.completedFuture(new Photo(size.getUrl(),
+                size.getHeight(), size.getWidth()));
+    }
+
+    @FieldDefaults(makeFinal = true)
+    @RequiredArgsConstructor
+    private static class VkPlatformPhotoDimensions implements ImageDimensions {
+        wbot.platform.vk.model.Photo.Size size;
+
+        @Override
+        public int getWidth() {
+            return size.getWidth();
+        }
+
+        @Override
+        public int getHeight() {
+            return size.getHeight();
+        }
     }
 
     @Override

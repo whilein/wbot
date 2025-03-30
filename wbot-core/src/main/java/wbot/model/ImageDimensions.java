@@ -1,5 +1,5 @@
 /*
- *    Copyright 2024 Whilein
+ *    Copyright 2025 Whilein
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,24 +16,25 @@
 
 package wbot.model;
 
-import lombok.Value;
-import org.jetbrains.annotations.ApiStatus;
-
-import java.util.List;
-
 /**
- * @author whilein
+ * @author _Novit_ (novitpw)
  */
-@Value
-public class InMessage {
-    long id;
-    String text;
-    IdentityHolder from;
-    IdentityHolder chat;
-    InMessage reply;
-    List<InMessage> forwarded;
-    long date;
+public interface ImageDimensions {
 
-    @ApiStatus.Internal
-    Object ref;
+    int getWidth();
+
+    int getHeight();
+
+    default long calculateArea() {
+        return (long) getWidth() * getHeight();
+    }
+
+    default int maxSide() {
+        return Math.max(getWidth(), getHeight());
+    }
+
+    default int minSide() {
+        return Math.min(getWidth(), getHeight());
+    }
+
 }
