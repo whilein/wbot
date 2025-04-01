@@ -56,6 +56,7 @@ public interface VkMessageMapper {
     @Mapping(target = "replyMessageId", source = "conversationMessageId")
     @Mapping(target = "from", source = "userId")
     @Mapping(target = "chat", source = "peerId")
+    @Mapping(target = "id", source = "eventId")
     @Mapping(target = "data", expression = "java(String.valueOf(messageEvent.getPayload()))")
     InKeyboardCallback mapToKeyboardCallback(MessageEvent messageEvent);
 

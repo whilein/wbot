@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.val;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import wbot.event.EventDispatcher;
 import wbot.http.HttpResponse;
@@ -66,14 +67,7 @@ public final class TelegramPlatform implements Platform {
         CallbackQuery query;
         if ((query = update.getCallbackQuery()) != null) {
             eventDispatcher.keyboardCallback(this, TelegramMessageMapper.INSTANCE.mapToKeyboardCallback(query));
-            sendCallbackAnswer(query);
         }
-    }
-
-    private void sendCallbackAnswer(CallbackQuery query) {
-        telegramClient.answerCallbackQuery()
-                .queryId(query.getId())
-                .make();
     }
 
     @Override
@@ -292,6 +286,22 @@ public final class TelegramPlatform implements Platform {
                         telegramClient.getUrlToFile(file.getFilePath()),
                         photoSize.getWidth(),
                         photoSize.getHeight()));
+    }
+
+    @Override
+    public CompletableFuture<Void> answerCallback(InKeyboardCallback keyboardCallback, @Nullable String text) {
+        val answerCallbackQuery = telegramClient.answerCallbackQuery()
+                .queryId(keyboardCallback.getId());
+
+        if (text != null) {
+            if (text.length() > 200) {
+                throw new IllegalArgumentException(String.format("Text too long, %s > 200", text.length()));
+            }
+
+            answerCallbackQuery.text(text);
+        }
+
+        return FutureUtils.asVoid(answerCallbackQuery.make());
     }
 
     @FieldDefaults(makeFinal = true)

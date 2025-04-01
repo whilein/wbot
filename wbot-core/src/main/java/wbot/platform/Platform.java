@@ -16,6 +16,7 @@
 
 package wbot.platform;
 
+import org.jetbrains.annotations.Nullable;
 import wbot.http.HttpResponse;
 import wbot.model.*;
 
@@ -50,4 +51,7 @@ public interface Platform extends Runnable {
 
     CompletableFuture<Photo> getPhoto(InMessage message, Predicate<ImageDimensions> filter,
                                       Comparator<ImageDimensions> sizeComparator);
+
+    CompletableFuture<Void> answerCallback(InKeyboardCallback keyboardCallback, @Nullable String text);
+
 }

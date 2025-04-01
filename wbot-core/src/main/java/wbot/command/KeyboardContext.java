@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.Nullable;
 import wbot.model.IdentityHolder;
 import wbot.model.InKeyboardCallback;
 import wbot.model.OutMessage;
@@ -72,6 +73,10 @@ public final class KeyboardContext implements ArgumentProvider {
 
     public CompletableFuture<Void> editMessage(OutMessage message) {
         return platform.editMessage(keyboardCallback, message);
+    }
+
+    public CompletableFuture<Void> answerCallback(@Nullable String text) {
+        return platform.answerCallback(keyboardCallback, text);
     }
 
 }

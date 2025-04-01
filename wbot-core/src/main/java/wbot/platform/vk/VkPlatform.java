@@ -83,16 +83,7 @@ public final class VkPlatform implements Platform {
         } else if (object instanceof MessageEvent) {
             val messageEvent = (MessageEvent) object;
             eventDispatcher.keyboardCallback(this, VkMessageMapper.INSTANCE.mapToKeyboardCallback(messageEvent));
-            sendCallbackAnswer(messageEvent);
         }
-    }
-
-    private void sendCallbackAnswer(MessageEvent event) {
-        vkClient.messagesSendEventAnswer()
-                .peerId(event.getPeerId())
-                .userId(event.getUserId())
-                .eventId(event.getEventId())
-                .make();
     }
 
     @Value
@@ -254,8 +245,9 @@ public final class VkPlatform implements Platform {
     }
 
     @Override
-    public CompletableFuture<Void> editMessage(InKeyboardCallback message, OutMessage newMessage) {
-        return FutureUtils.asVoid(makeMessageEdit(message.getChat().getIdentity(), message.getReplyMessageId(),
+    public CompletableFuture<Void> editMessage(InKeyboardCallback keyboardCallback, OutMessage newMessage) {
+        return FutureUtils.asVoid(makeMessageEdit(keyboardCallback.getChat().getIdentity(),
+                keyboardCallback.getReplyMessageId(),
                 newMessage));
     }
 
@@ -488,6 +480,24 @@ public final class VkPlatform implements Platform {
         val size = bestPhoto.size;
         return CompletableFuture.completedFuture(new Photo(size.getUrl(),
                 size.getHeight(), size.getWidth()));
+    }
+
+    @Override
+    public CompletableFuture<Void> answerCallback(InKeyboardCallback keyboardCallback, @Nullable String text) {
+        val messagesSendEventAnswer = vkClient.messagesSendEventAnswer()
+                .peerId(keyboardCallback.getChat().getValue())
+                .userId(keyboardCallback.getFrom().getValue())
+                .eventId(keyboardCallback.getId());
+
+        if (text != null) {
+            if (text.length() > 90) {
+                throw new IllegalArgumentException(String.format("Text too long, %s > 90", text.length()));
+            }
+
+            messagesSendEventAnswer.data("{\"type\":\"show_snackbar\",\"text\":\"" + text + "\"}");
+        }
+
+        return FutureUtils.asVoid(messagesSendEventAnswer.make());
     }
 
     @FieldDefaults(makeFinal = true)

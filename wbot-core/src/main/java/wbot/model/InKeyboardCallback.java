@@ -29,4 +29,6 @@ public class InKeyboardCallback {
     String data;
     IdentityHolder from;
     IdentityHolder chat;
+
+    String id;
 }
