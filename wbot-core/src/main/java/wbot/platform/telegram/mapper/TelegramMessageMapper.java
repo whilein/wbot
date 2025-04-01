@@ -40,6 +40,7 @@ public interface TelegramMessageMapper {
     @Mapping(target = "forwarded", source = "message", qualifiedByName = "mapReplyToForwardedMessage")
     @Mapping(target = "ref", source = ".", qualifiedByName = "mapToRef")
     @Mapping(target = "text", source = ".", qualifiedByName = "mapText")
+    @Mapping(target = "hasPhoto", source = ".", qualifiedByName = "hasPhoto")
     InMessage mapToMessage(Message message);
 
     @Mapping(target = "replyMessageId", source = "message.messageId")
@@ -66,6 +67,11 @@ public interface TelegramMessageMapper {
         return message.getText() == null
                 ? message.getCaption()
                 : message.getText();
+    }
+
+    @Named("hasPhoto")
+    default boolean hasPhoto(Message message) {
+        return message.getPhoto() != null && !message.getPhoto().isEmpty();
     }
 
 }

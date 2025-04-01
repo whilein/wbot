@@ -33,6 +33,7 @@ public class InMessage {
     InMessage reply;
     List<InMessage> forwarded;
     long date;
+    boolean hasPhoto;
 
     @ApiStatus.Internal
     Object ref;

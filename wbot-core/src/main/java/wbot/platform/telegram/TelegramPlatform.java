@@ -269,7 +269,12 @@ public final class TelegramPlatform implements Platform {
         }
 
         val ref = (Message) message.getRef();
-        val bestPhoto = ref.getPhoto().stream()
+        val photo = ref.getPhoto();
+        if (photo == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        val bestPhoto = photo.stream()
                 .map(TelegramPlatformPhotoDimensions::new)
                 .filter(filter)
                 .max(maxComparator)

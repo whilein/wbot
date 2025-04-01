@@ -27,8 +27,8 @@ import wbot.http.EmbeddableContent;
 import wbot.http.HttpResponse;
 import wbot.http.MultipartContent;
 import wbot.model.Attachment;
-import wbot.model.*;
 import wbot.model.Photo;
+import wbot.model.*;
 import wbot.platform.Platform;
 import wbot.platform.PlatformType;
 import wbot.platform.vk.mapper.VkInlineKeyboardMapper;
@@ -460,6 +460,11 @@ public final class VkPlatform implements Platform {
         }
 
         val ref = (Message) message.getRef();
+        val attachments = ref.getAttachments();
+        if (attachments == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
         val photo = ref.getAttachments().stream()
                 .filter(attachment -> attachment.getType() == wbot.platform.vk.model.Attachment.Type.PHOTO)
                 .map(wbot.platform.vk.model.Attachment::getPhoto)

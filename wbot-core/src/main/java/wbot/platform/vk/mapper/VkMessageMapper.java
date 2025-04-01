@@ -23,6 +23,7 @@ import org.mapstruct.Named;
 import org.mapstruct.factory.Mappers;
 import wbot.model.InKeyboardCallback;
 import wbot.model.InMessage;
+import wbot.platform.vk.model.Attachment;
 import wbot.platform.vk.model.Message;
 import wbot.platform.vk.model.update.MessageEvent;
 
@@ -43,6 +44,7 @@ public interface VkMessageMapper {
     @Mapping(target = "from", source = "fromId")
     @Mapping(target = "chat", source = "peerId")
     @Mapping(target = "ref", source = ".", qualifiedByName = "mapToRef")
+    @Mapping(target = "hasPhoto", source = ".", qualifiedByName = "hasPhoto")
     InMessage mapToMessage(Message message);
 
     @Mapping(target = "replyMessageId", source = "conversationMessageId")
@@ -92,4 +94,17 @@ public interface VkMessageMapper {
         return message;
     }
 
+    @Named("hasPhoto")
+    default boolean hasPhoto(Message message) {
+        val attachments = message.getAttachments();
+        if (attachments != null && !attachments.isEmpty()) {
+            for (val attachment : attachments) {
+                if (attachment.getType() == Attachment.Type.PHOTO) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
 }
