@@ -60,6 +60,7 @@ public final class VkPlatform implements Platform {
 
     long documentOwnerId;
 
+    @Getter
     Logger logger;
 
     @Getter

@@ -17,6 +17,7 @@
 package wbot.platform;
 
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 import wbot.http.HttpResponse;
 import wbot.model.*;
 
@@ -28,6 +29,8 @@ import java.util.function.Predicate;
  * @author whilein
  */
 public interface Platform extends Runnable {
+
+    Logger getLogger();
 
     IdentityHolder getIdentity();
 

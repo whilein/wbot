@@ -47,6 +47,7 @@ import java.util.function.Predicate;
 @RequiredArgsConstructor
 public final class TelegramPlatform implements Platform {
 
+    @Getter
     Logger logger;
 
     @Getter
