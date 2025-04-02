@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public final class CommandEventHandler implements EventHandler {
+public class CommandEventHandler implements EventHandler {
 
     private static final Pattern SPACE = Pattern.compile(" +");
 
