@@ -27,6 +27,7 @@ import wbot.platform.telegram.method.TelegramAnswerCallbackQuery;
 import wbot.platform.telegram.method.TelegramEditMessageCaption;
 import wbot.platform.telegram.method.TelegramEditMessageMedia;
 import wbot.platform.telegram.method.TelegramEditMessageText;
+import wbot.platform.telegram.method.TelegramGetChat;
 import wbot.platform.telegram.method.TelegramGetFile;
 import wbot.platform.telegram.method.TelegramGetMe;
 import wbot.platform.telegram.method.TelegramGetUpdates;
@@ -109,6 +110,10 @@ public final class TelegramClient {
 
     public TelegramGetFile getFile() {
         return new TelegramGetFile(this);
+    }
+
+    public TelegramGetChat getChat() {
+        return new TelegramGetChat(this);
     }
 
     public <R> CompletableFuture<R> send(TelegramMethod<R> method) {

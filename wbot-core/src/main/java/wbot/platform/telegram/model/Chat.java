@@ -18,8 +18,11 @@ package wbot.platform.telegram.model;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.Builder;
-import lombok.Value;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 import lombok.extern.jackson.Jacksonized;
 import wbot.model.IdentityHolder;
 import wbot.platform.PlatformType;
@@ -29,10 +32,12 @@ import java.util.List;
 /**
  * @author whilein
  */
-@Value
-@Builder
+@Data
 @Jacksonized
+@SuperBuilder
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@AllArgsConstructor
 public class Chat implements IdentityHolder {
 
     long id;
