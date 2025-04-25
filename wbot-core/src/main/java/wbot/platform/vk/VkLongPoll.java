@@ -117,7 +117,7 @@ public final class VkLongPoll {
 
                         val updates = response.updates;
 
-                        logger.info("Received " + updates.size() + " updates");
+                        logger.debug("Received {} updates", updates.size());
 
                         for (val update : updates) {
                             try {

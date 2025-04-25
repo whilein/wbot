@@ -49,7 +49,7 @@ public final class TelegramLongPoll {
                         .make()
                         .get();
 
-                logger.info("Received " + updates.length + " updates");
+                logger.debug("Received {} updates", updates.length);
 
                 for (val update : updates) {
                     try {
