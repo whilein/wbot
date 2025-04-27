@@ -26,19 +26,36 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import wbot.event.EventDispatcher;
 import wbot.http.HttpResponse;
+import wbot.model.Attachment;
+import wbot.model.IdentityHolder;
+import wbot.model.IdentityName;
+import wbot.model.ImageDimensions;
+import wbot.model.InKeyboardCallback;
+import wbot.model.InMessage;
+import wbot.model.InlineKeyboard;
+import wbot.model.OutMessage;
+import wbot.model.Photo;
 import wbot.model.PhotoSize;
-import wbot.model.*;
+import wbot.model.SentMessage;
 import wbot.platform.Platform;
 import wbot.platform.PlatformType;
 import wbot.platform.telegram.mapper.TelegramInlineKeyboardMapper;
 import wbot.platform.telegram.mapper.TelegramMessageMapper;
 import wbot.platform.telegram.method.TelegramSend;
-import wbot.platform.telegram.model.*;
+import wbot.platform.telegram.model.CallbackQuery;
+import wbot.platform.telegram.model.Chat;
+import wbot.platform.telegram.model.File;
+import wbot.platform.telegram.model.Message;
+import wbot.platform.telegram.model.Update;
+import wbot.platform.telegram.model.User;
 import wbot.util.FutureUtils;
 
+import java.io.InputStream;
 import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
+
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 /**
  * @author whilein
@@ -75,7 +92,7 @@ public final class TelegramPlatform implements Platform {
     public CompletableFuture<IdentityName> getName(IdentityHolder identity) {
         if (identity instanceof User) {
             val user = (User) identity;
-            return CompletableFuture.completedFuture(new IdentityName(user.getFirstName(), user.getLastName()));
+            return completedFuture(new IdentityName(user.getFirstName(), user.getLastName()));
         } else if (identity instanceof Chat) {
             throw new IllegalArgumentException("Cannot get display name of chat identity");
         } else {
@@ -98,6 +115,9 @@ public final class TelegramPlatform implements Platform {
                 .limit(PhotoSize.VALUES.size())
                 .make()
                 .thenCompose(profile -> {
+                    val photos = profile.getPhotos();
+                    if (photos.isEmpty()) return completedFuture(new HttpResponse(InputStream.nullInputStream()));
+
                     val sizes = profile.getPhotos().get(0);
                     val firstPhoto = sizes.get(photoSize.ordinal());
 
@@ -149,7 +169,7 @@ public final class TelegramPlatform implements Platform {
         val attachment = message.getAttachment();
 
         CompletableFuture<TelegramSend<?>> sendFuture = attachment == null
-                ? CompletableFuture.completedFuture(telegramClient.sendMessage().text(message.getText()))
+                ? completedFuture(telegramClient.sendMessage().text(message.getText()))
                 : sendAttachment(attachment, message.getText());
 
         return sendFuture
@@ -266,7 +286,7 @@ public final class TelegramPlatform implements Platform {
         val ref = (Message) message.getRef();
         val photo = ref.getPhoto();
         if (photo == null) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
         val bestPhoto = photo.stream()
@@ -276,7 +296,7 @@ public final class TelegramPlatform implements Platform {
                 .orElse(null);
 
         if (bestPhoto == null) {
-            return CompletableFuture.completedFuture(null);
+            return completedFuture(null);
         }
 
         val photoSize = bestPhoto.photoSize;

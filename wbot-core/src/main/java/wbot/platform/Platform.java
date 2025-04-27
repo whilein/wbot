@@ -19,7 +19,16 @@ package wbot.platform;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import wbot.http.HttpResponse;
-import wbot.model.*;
+import wbot.model.Attachment;
+import wbot.model.IdentityHolder;
+import wbot.model.IdentityName;
+import wbot.model.ImageDimensions;
+import wbot.model.InKeyboardCallback;
+import wbot.model.InMessage;
+import wbot.model.OutMessage;
+import wbot.model.Photo;
+import wbot.model.PhotoSize;
+import wbot.model.SentMessage;
 
 import java.util.Comparator;
 import java.util.concurrent.CompletableFuture;
