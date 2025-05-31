@@ -45,7 +45,12 @@ public class InlineKeyboard {
         }
 
         public Builder button(String label, String data, String color) {
-            rowButtons.add(new InlineKeyboardButton(label, data, color));
+            button(new InlineKeyboardButton(label, data, color));
+            return this;
+        }
+
+        public Builder button(InlineKeyboardButton button) {
+            rowButtons.add(button);
             return this;
         }
 
