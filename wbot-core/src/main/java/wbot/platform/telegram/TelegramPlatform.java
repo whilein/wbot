@@ -45,6 +45,7 @@ import wbot.platform.telegram.method.TelegramSend;
 import wbot.platform.telegram.model.CallbackQuery;
 import wbot.platform.telegram.model.Chat;
 import wbot.platform.telegram.model.File;
+import wbot.platform.telegram.model.LinkPreviewOptions;
 import wbot.platform.telegram.model.Message;
 import wbot.platform.telegram.model.Update;
 import wbot.platform.telegram.model.User;
@@ -175,7 +176,6 @@ public final class TelegramPlatform implements Platform {
         return sendFuture
                 .thenCompose(send -> {
                     send.chatId(peer.getValue());
-                    send.disableNotification(message.isDisableNotification());
 
                     val reply = message.getReply();
                     if (reply != null) {
@@ -185,6 +185,14 @@ public final class TelegramPlatform implements Platform {
                     val keyboard = message.getKeyboard();
                     if (keyboard != null) {
                         send.replyMarkup(TelegramInlineKeyboardMapper.INSTANCE.mapKeyboard(keyboard));
+                    }
+
+                    if (message.isDisableLinksParsing()) {
+                        send.linkPreviewOptions(LinkPreviewOptions.disabled());
+                    }
+
+                    if (message.isDisableNotification()) {
+                        send.disableNotification(true);
                     }
 
                     return send.make();
@@ -212,7 +220,8 @@ public final class TelegramPlatform implements Platform {
                 text,
                 oldMessage.getAttachment(),
                 null,
-                null);
+                null,
+                true);
     }
 
     @Override
@@ -223,7 +232,8 @@ public final class TelegramPlatform implements Platform {
                 newMessage.getText(),
                 oldMessage.getAttachment(),
                 newMessage.getAttachment(),
-                newMessage.getKeyboard());
+                newMessage.getKeyboard(),
+                newMessage.isDisableLinksParsing());
     }
 
     @Override
@@ -232,7 +242,8 @@ public final class TelegramPlatform implements Platform {
                 newMessage.getText(),
                 null,
                 newMessage.getAttachment(),
-                newMessage.getKeyboard());
+                newMessage.getKeyboard(),
+                newMessage.isDisableLinksParsing());
     }
 
     private CompletableFuture<Void> editMessageContent(
@@ -241,7 +252,8 @@ public final class TelegramPlatform implements Platform {
             String text,
             Attachment oldAttachment,
             Attachment attachment,
-            InlineKeyboard keyboard
+            InlineKeyboard keyboard,
+            boolean disableLinksParsing
     ) {
         if (attachment != null) {
             val editMessageMedia = telegramClient.editMessageMedia()
@@ -250,6 +262,10 @@ public final class TelegramPlatform implements Platform {
 
             if (keyboard != null) {
                 editMessageMedia.replyMarkup(TelegramInlineKeyboardMapper.INSTANCE.mapKeyboard(keyboard));
+            }
+
+            if (disableLinksParsing) {
+                editMessageMedia.linkPreviewOptions(LinkPreviewOptions.disabled());
             }
 
             val type = attachment.type().toString().toLowerCase();

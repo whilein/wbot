@@ -16,10 +16,15 @@
 
 package wbot.platform.vk;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.jackson.Jacksonized;
+import lombok.val;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import wbot.event.EventDispatcher;
@@ -27,8 +32,16 @@ import wbot.http.EmbeddableContent;
 import wbot.http.HttpResponse;
 import wbot.http.MultipartContent;
 import wbot.model.Attachment;
+import wbot.model.Identity;
+import wbot.model.IdentityHolder;
+import wbot.model.IdentityName;
+import wbot.model.ImageDimensions;
+import wbot.model.InKeyboardCallback;
+import wbot.model.InMessage;
+import wbot.model.OutMessage;
 import wbot.model.Photo;
-import wbot.model.*;
+import wbot.model.PhotoSize;
+import wbot.model.SentMessage;
 import wbot.platform.Platform;
 import wbot.platform.PlatformType;
 import wbot.platform.vk.mapper.VkInlineKeyboardMapper;
@@ -37,7 +50,12 @@ import wbot.platform.vk.method.VkDocsSave;
 import wbot.platform.vk.method.VkMessagesEdit;
 import wbot.platform.vk.method.VkMessagesSend;
 import wbot.platform.vk.method.VkMethod;
-import wbot.platform.vk.model.*;
+import wbot.platform.vk.model.Document;
+import wbot.platform.vk.model.Forward;
+import wbot.platform.vk.model.Group;
+import wbot.platform.vk.model.Id;
+import wbot.platform.vk.model.Message;
+import wbot.platform.vk.model.User;
 import wbot.platform.vk.model.update.MessageEvent;
 import wbot.platform.vk.model.update.MessageNew;
 import wbot.platform.vk.model.update.UpdateObject;
@@ -195,6 +213,10 @@ public final class VkPlatform implements Platform {
             sendMessage.longitude(longitude);
         }
 
+        if (message.isDisableLinksParsing()) {
+            sendMessage.dontParseLinks(true);
+        }
+
         Attachment attachment;
 
         CompletableFuture<VkMessagesSend.Result[]> cf;
@@ -275,6 +297,10 @@ public final class VkPlatform implements Platform {
 
                     if (newMessage.isDisableNotification()) {
                         messagesEdit.disableMentions(true);
+                    }
+
+                    if (newMessage.isDisableLinksParsing()) {
+                        messagesEdit.dontParseLinks(true);
                     }
 
                     val latitude = newMessage.getLatitude();

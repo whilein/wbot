@@ -17,6 +17,7 @@
 package wbot.platform.telegram.method;
 
 import wbot.platform.telegram.TelegramClient;
+import wbot.platform.telegram.model.LinkPreviewOptions;
 import wbot.platform.telegram.model.Message;
 import wbot.platform.telegram.model.ReplyMarkup;
 
@@ -63,5 +64,9 @@ public abstract class TelegramSend<S extends TelegramSend<S>> extends TelegramMe
         return self();
     }
 
+    public S linkPreviewOptions(LinkPreviewOptions linkPreviewOptions) {
+        params.set("link_preview_options", linkPreviewOptions);
+        return self();
+    }
 
 }

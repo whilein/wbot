@@ -37,6 +37,7 @@ public class OutMessage {
     Attachment attachment;
     boolean disableNotification;
     boolean keepForwardedMessages;
+    boolean disableLinksParsing;
     Float latitude;
     Float longitude;
 
@@ -53,6 +54,7 @@ public class OutMessage {
                 attachment,
                 disableNotification,
                 keepForwardedMessages,
+                disableLinksParsing,
                 latitude,
                 longitude
         );
@@ -78,6 +80,9 @@ public class OutMessage {
 
         @Setter
         boolean disableNotification = true;
+
+        @Setter
+        boolean disableLinksParsing = true;
 
         @Setter
         boolean keepForwarded = true;
@@ -133,6 +138,7 @@ public class OutMessage {
             return new OutMessage(chat, reply, text, keyboard, attachment,
                     disableNotification,
                     keepForwarded,
+                    disableLinksParsing,
                     latitude,
                     longitude);
         }
