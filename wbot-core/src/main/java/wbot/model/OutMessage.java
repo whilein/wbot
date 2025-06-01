@@ -82,7 +82,7 @@ public class OutMessage {
         boolean disableNotification = true;
 
         @Setter
-        boolean disableLinksParsing = true;
+        boolean disableLinksParsing = false;
 
         @Setter
         boolean keepForwarded = true;
