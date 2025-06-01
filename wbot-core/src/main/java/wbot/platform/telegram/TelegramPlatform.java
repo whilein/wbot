@@ -284,6 +284,10 @@ public final class TelegramPlatform implements Platform {
             telegramEdit.replyMarkup(TelegramInlineKeyboardMapper.INSTANCE.mapKeyboard(keyboard));
         }
 
+        if (disableLinksParsing) {
+            telegramEdit.linkPreviewOptions(LinkPreviewOptions.disabled());
+        }
+
         return FutureUtils.asVoid(telegramEdit.messageId(messageId)
                 .chatId(chatId)
                 .make());
