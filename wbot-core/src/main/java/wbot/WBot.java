@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import wbot.command.CommandEventHandler;
 import wbot.command.CommandKeyboardButtonPayloadCodec;
 import wbot.command.CommandManager;
+import wbot.command.SimpleCommandKeyboardButtonPayloadCodec;
 import wbot.command.SimpleCommandManager;
 import wbot.event.EventHandler;
 import wbot.event.SimpleEventDispatcher;
@@ -166,10 +167,30 @@ public final class WBot {
         @NonFinal
         String vkontakteToken;
 
+        @NonFinal
+        CommandManager commandManager;
+
+        @NonFinal
+        CommandKeyboardButtonPayloadCodec keyboardButtonPayloadCodec;
+
+        @Setter
+        @NonFinal
+        boolean registerCommandEventHandler = true;
+
         Set<EventHandler> customEventHandlers = new HashSet<>();
 
         public Builder customEventHandler(EventHandler eventHandler) {
             this.customEventHandlers.add(eventHandler);
+            return this;
+        }
+
+        public Builder customCommandManager(CommandManager commandManager) {
+            this.commandManager = commandManager;
+            return this;
+        }
+
+        public Builder customKeyboardButtonPayloadCodec(CommandKeyboardButtonPayloadCodec keyboardButtonPayloadCodec) {
+            this.keyboardButtonPayloadCodec = keyboardButtonPayloadCodec;
             return this;
         }
 
@@ -198,10 +219,21 @@ public final class WBot {
                 jsonMapper = new JsonMapper();
             }
 
-            val commandManager = new SimpleCommandManager(new CommandKeyboardButtonPayloadCodec(jsonMapper));
+            CommandKeyboardButtonPayloadCodec keyboardButtonPayloadCodec;
+            if ((keyboardButtonPayloadCodec = this.keyboardButtonPayloadCodec) == null) {
+                keyboardButtonPayloadCodec = new SimpleCommandKeyboardButtonPayloadCodec(jsonMapper);
+            }
+
+            CommandManager commandManager;
+            if ((commandManager = this.commandManager) == null) {
+                commandManager = new SimpleCommandManager(keyboardButtonPayloadCodec);
+            }
 
             val eventHandlers = new HashSet<>(this.customEventHandlers);
-            eventHandlers.add(new CommandEventHandler(commandManager));
+
+            if (registerCommandEventHandler) {
+                eventHandlers.add(new CommandEventHandler(commandManager));
+            }
 
             val eventDispatcher = new SimpleEventDispatcher(logger, eventHandlers);
 

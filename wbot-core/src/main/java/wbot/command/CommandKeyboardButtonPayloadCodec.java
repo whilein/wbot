@@ -1,5 +1,5 @@
 /*
- *    Copyright 2024 Whilein
+ *    Copyright 2025 Whilein
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,35 +16,17 @@
 
 package wbot.command;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
 /**
- * @author whilein
+ * @author _Novit_ (novitpw)
  */
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@RequiredArgsConstructor
-public final class CommandKeyboardButtonPayloadCodec {
-    JsonMapper jsonMapper;
+public interface CommandKeyboardButtonPayloadCodec {
 
-    public String serialize(CommandKeyboardButtonPayload payload) {
-        try {
-            return jsonMapper.writeValueAsString(payload);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    @NotNull String serialize(@NotNull CommandKeyboardButtonPayload payload);
 
-    public Optional<CommandKeyboardButtonPayload> deserialize(String payload) {
-        try {
-            return Optional.of(jsonMapper.readValue(payload, CommandKeyboardButtonPayload.class));
-        } catch (JsonProcessingException e) {
-            return Optional.empty();
-        }
-    }
+    @NotNull Optional<@NotNull CommandKeyboardButtonPayload> deserialize(@NotNull String payload);
+
 }

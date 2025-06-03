@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import wbot.model.IdentityHolder;
 import wbot.model.InKeyboardCallback;
@@ -28,6 +29,7 @@ import wbot.model.OutMessage;
 import wbot.model.SentMessage;
 import wbot.platform.Platform;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -44,7 +46,7 @@ public final class KeyboardContext implements ArgumentProvider {
     @Getter
     String name;
 
-    String[] arguments;
+    Object[] arguments;
 
     @Getter
     InKeyboardCallback keyboardCallback;
@@ -59,7 +61,23 @@ public final class KeyboardContext implements ArgumentProvider {
 
     @Override
     public String argument(int i) {
-        return arguments[i];
+        return argumentAs(i, String.class).orElseThrow();
+    }
+
+    public @NotNull Optional<Object> rawArgument(int i) {
+        return isValidIndex(i)
+                ? Optional.ofNullable(arguments[i])
+                : Optional.empty();
+    }
+
+    public <T> @NotNull Optional<T> argumentAs(int i, Class<T> type) {
+        return rawArgument(i)
+                .filter(type::isInstance)
+                .map(type::cast);
+    }
+
+    private boolean isValidIndex(int i) {
+        return i >= 0 && i < arguments.length;
     }
 
     @Override

@@ -25,10 +25,10 @@ import wbot.platform.Platform;
  */
 public interface EventHandler {
 
-    default void onMessage(Platform platform, InMessage inMessage) {
+    default void onMessage(Platform platform, InMessage inMessage) throws Exception {
     }
 
-    default void onKeyboardCallback(Platform platform, InKeyboardCallback inKeyboardCallback) {
+    default void onKeyboardCallback(Platform platform, InKeyboardCallback inKeyboardCallback) throws Exception {
     }
 
 }
