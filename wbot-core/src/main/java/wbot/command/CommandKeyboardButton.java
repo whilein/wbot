@@ -33,7 +33,7 @@ public final class CommandKeyboardButton {
     @Getter
     String name;
 
-    public String asPayload(String... arguments) {
+    public String asPayload(Object... arguments) {
         return codec.serialize(new CommandKeyboardButtonPayload(name, arguments));
     }
 
