@@ -48,7 +48,7 @@ import java.util.concurrent.CompletionException;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class VkClient {
 
-    private static final String API_URL = "https://api.vk.com/method/";
+    private static final String API_URL = "https://api.vk.ru/method/";
     private static final String API_VERSION = "5.199";
 
     String defaultParams;

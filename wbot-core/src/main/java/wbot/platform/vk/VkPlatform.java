@@ -465,7 +465,7 @@ public final class VkPlatform implements Platform {
             throw new IllegalArgumentException("Identity platform is not VK");
         }
 
-        return "https://vk.com/id" + identity.getValue();
+        return "https://vk.ru/id" + identity.getValue();
     }
 
     @Override
@@ -562,13 +562,13 @@ public final class VkPlatform implements Platform {
                         .get();
 
                 if (!settings.isEnabled()) {
-                    logger.error("LongPoll API is disabled! To enable, follow the link: https://vk.com/club" + groupId
+                    logger.error("LongPoll API is disabled! To enable, follow the link: https://vk.ru/club" + groupId
                                  + "?act=longpoll_api");
                     return;
                 }
 
                 if (!settings.getEvents().hasAny()) {
-                    logger.error("LongPoll API has no enabled event types. To enable, follow the link: https://vk.com/club" + groupId
+                    logger.error("LongPoll API has no enabled event types. To enable, follow the link: https://vk.ru/club" + groupId
                                  + "?act=longpoll_api_types");
                     return;
                 }
