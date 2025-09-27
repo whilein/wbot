@@ -65,7 +65,9 @@ public final class KeyboardContext implements ArgumentProvider {
 
     @Override
     public String argument(int i) {
-        return argumentAs(i, String.class).orElseThrow();
+        return rawArgument(i)
+                .map(Object::toString)
+                .orElseThrow();
     }
 
     public @NotNull Optional<Object> rawArgument(int i) {
