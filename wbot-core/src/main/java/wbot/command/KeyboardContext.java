@@ -16,6 +16,8 @@
 
 package wbot.command;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +53,8 @@ public final class KeyboardContext implements ArgumentProvider {
     @Getter
     InKeyboardCallback keyboardCallback;
 
+    JsonMapper jsonMapper;
+
     public IdentityHolder chat() {
         return keyboardCallback.getChat();
     }
@@ -71,9 +75,15 @@ public final class KeyboardContext implements ArgumentProvider {
     }
 
     public <T> @NotNull Optional<T> argumentAs(int i, Class<T> type) {
-        return rawArgument(i)
-                .filter(type::isInstance)
-                .map(type::cast);
+        return rawArgument(i).flatMap(arg -> readValue(arg, type));
+    }
+
+    private <T> @NotNull Optional<T> readValue(Object value, Class<T> type) {
+        try {
+            return Optional.ofNullable(jsonMapper.readValue(value.toString(), type));
+        } catch (JsonProcessingException e) {
+            return Optional.empty();
+        }
     }
 
     private boolean isValidIndex(int i) {

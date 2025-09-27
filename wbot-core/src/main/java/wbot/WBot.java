@@ -232,7 +232,7 @@ public final class WBot {
             val eventHandlers = new HashSet<>(this.customEventHandlers);
 
             if (registerCommandEventHandler) {
-                eventHandlers.add(new CommandEventHandler(commandManager));
+                eventHandlers.add(new CommandEventHandler(commandManager, jsonMapper));
             }
 
             val eventDispatcher = new SimpleEventDispatcher(logger, eventHandlers);

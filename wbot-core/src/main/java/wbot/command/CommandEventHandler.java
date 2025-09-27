@@ -16,6 +16,7 @@
 
 package wbot.command;
 
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -37,6 +38,7 @@ public class CommandEventHandler implements EventHandler {
     private static final Pattern SPACE = Pattern.compile(" +");
 
     CommandManager commandManager;
+    JsonMapper jsonMapper;
 
     @Override
     public void onKeyboardCallback(Platform platform, InKeyboardCallback inKeyboardCallback) {
@@ -48,7 +50,8 @@ public class CommandEventHandler implements EventHandler {
         val executor = commandManager.getKeyboardButtonExecutor(name);
         if (executor == null) return;
 
-        executor.execute(new KeyboardContext(platform, name, payload.getArgs(), inKeyboardCallback));
+        executor.execute(new KeyboardContext(platform, name, payload.getArgs(), inKeyboardCallback,
+                jsonMapper));
     }
 
     @Override
