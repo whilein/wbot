@@ -27,9 +27,14 @@ public interface HttpClient {
 
     void stop();
 
-    CompletableFuture<HttpResponse> post(String url, Content content);
-
     CompletableFuture<HttpResponse> get(String url);
 
+    CompletableFuture<HttpResponse> delete(String url);
+
+    CompletableFuture<HttpResponse> post(String url, Content content);
+
+    CompletableFuture<HttpResponse> put(String url, Content content);
+
+    CompletableFuture<HttpResponse> patch(String url, Content content);
 
 }

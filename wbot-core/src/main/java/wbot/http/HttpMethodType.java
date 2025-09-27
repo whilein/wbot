@@ -1,5 +1,5 @@
 /*
- *    Copyright 2024 Whilein
+ *    Copyright 2025 Whilein
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,25 +16,9 @@
 
 package wbot.http;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-
-import java.io.IOException;
-import java.io.InputStream;
-
-@Getter
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@RequiredArgsConstructor
-public final class HttpResponse implements AutoCloseable {
-
-    int statusCode;
-    InputStream content;
-
-    @Override
-    public void close() throws IOException {
-        content.close();
-    }
-
+/**
+ * @author _Novit_ (novitpw)
+ */
+public enum HttpMethodType {
+    GET, POST, PUT, HEAD, DELETE, PATCH
 }

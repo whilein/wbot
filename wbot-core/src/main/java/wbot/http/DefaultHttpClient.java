@@ -75,17 +75,25 @@ public final class DefaultHttpClient implements HttpClient {
     }
 
     @Override
-    public CompletableFuture<HttpResponse> post(String url, Content content) {
+    public CompletableFuture<HttpResponse> get(String url) {
+        return dataRetrievalRequest(url, HttpMethodType.GET);
+    }
+
+    @Override
+    public CompletableFuture<HttpResponse> delete(String url) {
+        return dataRetrievalRequest(url, HttpMethodType.DELETE);
+    }
+
+    private CompletableFuture<HttpResponse> dataRetrievalRequest(
+            String url,
+            HttpMethodType methodType
+    ) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 val urlConnection = (HttpURLConnection) new URL(url).openConnection();
-                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestMethod(methodType.name());
                 urlConnection.setDoInput(true);
-                urlConnection.setDoOutput(true);
-
-                content.accept(new RequestBootstrappingContentVisitor(urlConnection));
-
-                urlConnection.getResponseCode();
+                urlConnection.setDoOutput(false);
 
                 return getResponse(urlConnection);
             } catch (Exception e) {
@@ -95,13 +103,33 @@ public final class DefaultHttpClient implements HttpClient {
     }
 
     @Override
-    public CompletableFuture<HttpResponse> get(String url) {
+    public CompletableFuture<HttpResponse> post(String url, Content content) {
+        return resourceChangeRequest(url, content, HttpMethodType.POST);
+    }
+
+    @Override
+    public CompletableFuture<HttpResponse> put(String url, Content content) {
+        return resourceChangeRequest(url, content, HttpMethodType.PUT);
+    }
+
+    @Override
+    public CompletableFuture<HttpResponse> patch(String url, Content content) {
+        return resourceChangeRequest(url, content, HttpMethodType.PATCH);
+    }
+
+    private CompletableFuture<HttpResponse> resourceChangeRequest(
+            String url,
+            Content content,
+            HttpMethodType methodType
+    ) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 val urlConnection = (HttpURLConnection) new URL(url).openConnection();
-                urlConnection.setRequestMethod("GET");
+                urlConnection.setRequestMethod(methodType.name());
                 urlConnection.setDoInput(true);
-                urlConnection.setDoOutput(false);
+                urlConnection.setDoOutput(true);
+
+                content.accept(new RequestBootstrappingContentVisitor(urlConnection));
 
                 return getResponse(urlConnection);
             } catch (Exception e) {
@@ -118,7 +146,7 @@ public final class DefaultHttpClient implements HttpClient {
             stream = connection.getInputStream();
         }
 
-        return new HttpResponse(stream);
+        return new HttpResponse(connection.getResponseCode(), stream);
     }
 
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)

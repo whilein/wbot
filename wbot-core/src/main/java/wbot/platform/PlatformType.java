@@ -29,7 +29,7 @@ import lombok.experimental.FieldDefaults;
 @RequiredArgsConstructor
 public enum PlatformType {
 
-    VK("Vkontakte"), TELEGRAM("Telegram");
+    VK("Vkontakte"), TELEGRAM("Telegram"), MAX("Max");
 
     String displayName;
 

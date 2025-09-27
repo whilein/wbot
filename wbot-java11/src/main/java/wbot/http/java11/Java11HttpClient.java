@@ -23,6 +23,7 @@ import lombok.val;
 import wbot.http.Content;
 import wbot.http.ExceptionSneakyPropagatingContentVisitor;
 import wbot.http.HttpClient;
+import wbot.http.HttpMethodType;
 import wbot.http.HttpResponse;
 import wbot.http.MultipartContent;
 
@@ -56,16 +57,38 @@ public final class Java11HttpClient implements HttpClient {
 
     @Override
     public CompletableFuture<HttpResponse> post(String url, Content content) {
-        val request = content.accept(new RequestInitializingContentVisitor(url));
+        val request = content.accept(new RequestInitializingContentVisitor(url, HttpMethodType.POST));
 
         return httpClient.sendAsync(request, BodyHandlers.ofInputStream())
-                .thenApply(response -> new HttpResponse(response.body()));
+                .thenApply(response -> new HttpResponse(response.statusCode(), response.body()));
     }
 
     @Override
     public CompletableFuture<HttpResponse> get(String url) {
         return httpClient.sendAsync(HttpRequest.newBuilder(URI.create(url)).build(), BodyHandlers.ofInputStream())
-                .thenApply(response -> new HttpResponse(response.body()));
+                .thenApply(response -> new HttpResponse(response.statusCode(), response.body()));
+    }
+
+    @Override
+    public CompletableFuture<HttpResponse> delete(String url) {
+        return httpClient.sendAsync(HttpRequest.newBuilder(URI.create(url)).DELETE().build(), BodyHandlers.ofInputStream())
+                .thenApply(response -> new HttpResponse(response.statusCode(), response.body()));
+    }
+
+    @Override
+    public CompletableFuture<HttpResponse> put(String url, Content content) {
+        val request = content.accept(new RequestInitializingContentVisitor(url, HttpMethodType.PUT));
+
+        return httpClient.sendAsync(request, BodyHandlers.ofInputStream())
+                .thenApply(response -> new HttpResponse(response.statusCode(), response.body()));
+    }
+
+    @Override
+    public CompletableFuture<HttpResponse> patch(String url, Content content) {
+        val request = content.accept(new RequestInitializingContentVisitor(url, HttpMethodType.PATCH));
+
+        return httpClient.sendAsync(request, BodyHandlers.ofInputStream())
+                .thenApply(response -> new HttpResponse(response.statusCode(), response.body()));
     }
 
     @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -73,9 +96,10 @@ public final class Java11HttpClient implements HttpClient {
     private static final class RequestInitializingContentVisitor extends ExceptionSneakyPropagatingContentVisitor<HttpRequest> {
 
         String url;
+        HttpMethodType httpMethodType;
 
         private HttpRequest.Builder sendRequest(HttpRequest.BodyPublisher content) {
-            return HttpRequest.newBuilder(URI.create(url)).POST(content);
+            return HttpRequest.newBuilder(URI.create(url)).method(httpMethodType.name(), content);
         }
 
         @Override
