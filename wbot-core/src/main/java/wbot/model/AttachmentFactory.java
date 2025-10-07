@@ -111,27 +111,25 @@ public final class AttachmentFactory {
         public @NotNull CompletableFuture<EmbeddableContent> createContent() {
             return CompletableFuture.supplyAsync(() -> {
                 val writers = ImageIO.getImageWritersByMIMEType(contentType);
-
                 if (!writers.hasNext()) {
                     throw new IllegalArgumentException("No image writer found for " + contentType);
                 }
 
-                val content = new ByteArrayOutputStreamEx();
-
-                try {
+                try (val content = new ByteArrayOutputStreamEx();
+                     val output = new MemoryCacheImageOutputStream(content)) {
                     val writer = writers.next();
-                    writer.setOutput(new MemoryCacheImageOutputStream(content));
+                    writer.setOutput(output);
 
                     try {
                         writer.write(image);
                     } finally {
                         writer.dispose();
                     }
+
+                    return new InputStreamContent(contentType, content.size(), content.toInputStream());
                 } catch (IOException e) {
                     throw new CompletionException(e);
                 }
-
-                return new InputStreamContent(contentType, content.size(), content.toInputStream());
             }, executor);
         }
     }
