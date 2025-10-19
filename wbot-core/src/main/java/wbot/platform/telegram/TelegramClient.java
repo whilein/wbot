@@ -37,6 +37,7 @@ import wbot.platform.telegram.method.TelegramSendDocument;
 import wbot.platform.telegram.method.TelegramSendMessage;
 import wbot.platform.telegram.method.TelegramSendPhoto;
 import wbot.platform.telegram.model.ResponseOrError;
+import wbot.util.Env;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -48,8 +49,11 @@ import java.util.concurrent.CompletionException;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class TelegramClient {
 
-    private static final String BOT_API_URL = "https://api.telegram.org/bot";
-    private static final String BOT_FILES_API_URL = "https://api.telegram.org/file/bot";
+    private static final String BOT_API_URL = Env.getString("WBOT_TELEGRAM_CLIENT_URL",
+            "https://api.telegram.org/bot");
+
+    private static final String BOT_FILES_API_URL =  Env.getString("WBOT_TELEGRAM_CLIENT_FILES_URL",
+            "https://api.telegram.org/file/bot");
 
     String apiUrl;
 

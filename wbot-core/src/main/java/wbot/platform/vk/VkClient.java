@@ -36,6 +36,7 @@ import wbot.platform.vk.method.VkPhotosGetMessagesUploadServer;
 import wbot.platform.vk.method.VkPhotosSaveMessagesPhoto;
 import wbot.platform.vk.method.VkUsersGet;
 import wbot.platform.vk.model.ResponseOrError;
+import wbot.util.Env;
 
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -48,7 +49,9 @@ import java.util.concurrent.CompletionException;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class VkClient {
 
-    private static final String API_URL = "https://api.vk.ru/method/";
+    private static final String API_URL = Env.getString("WBOT_VK_CLIENT_URL",
+            "https://api.vk.ru/method/");
+
     private static final String API_VERSION = "5.199";
 
     String defaultParams;
