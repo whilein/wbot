@@ -17,55 +17,52 @@
 package wbot.platform.telegram;
 
 import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.val;
 import org.slf4j.Logger;
+import wbot.platform.AbstractLongPoll;
 import wbot.platform.telegram.model.Update;
 
+import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 /**
  * @author whilein
  */
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@RequiredArgsConstructor
-public final class TelegramLongPoll {
-
+public final class TelegramLongPoll extends AbstractLongPoll<Update> {
     private static final int TIMEOUT = 90;
-
-    Logger logger;
 
     TelegramClient telegramClient;
 
-    public void start(Consumer<Update> updateHandler) {
-        Integer offset = null;
+    public TelegramLongPoll(Logger logger, TelegramClient telegramClient) {
+        super(logger);
 
-        while (true) {
+        this.telegramClient = telegramClient;
+    }
+
+    @NonFinal
+    volatile Integer offset;
+
+    @Override
+    protected void poll(Consumer<Update> updateHandler) throws InterruptedException, ExecutionException {
+        val updates = telegramClient.getUpdates()
+                .timeout(TIMEOUT)
+                .offset(offset)
+                .make()
+                .get();
+
+        logger.debug("Received {} updates", updates.length);
+
+        for (val update : updates) {
             try {
-                val updates = telegramClient.getUpdates()
-                        .timeout(TIMEOUT)
-                        .offset(offset)
-                        .make()
-                        .get();
-
-                logger.debug("Received {} updates", updates.length);
-
-                for (val update : updates) {
-                    try {
-                        updateHandler.accept(update);
-                    } catch (Exception e) {
-                        logger.error("Cannot handle update", e);
-                    }
-
-                    offset = update.getUpdateId() + 1;
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
+                updateHandler.accept(update);
             } catch (Exception e) {
-                logger.error("LongPoll receiving updates failure", e);
+                logger.error("Cannot handle update", e);
             }
+
+            offset = update.getUpdateId() + 1;
         }
     }
 

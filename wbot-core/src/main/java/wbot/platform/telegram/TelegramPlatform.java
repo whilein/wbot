@@ -374,6 +374,8 @@ public final class TelegramPlatform implements Platform {
 
             val telegram = new TelegramLongPoll(logger, telegramClient);
             telegram.start(this::handleUpdate);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             logger.error("Failed to start Telegram LongPoll", e);
         }
