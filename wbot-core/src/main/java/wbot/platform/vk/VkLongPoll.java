@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -43,6 +44,8 @@ import java.util.function.Consumer;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public final class VkLongPoll extends AbstractLongPoll<UpdateObject> {
     private static final String URL = "%s?act=a_check&key=%s&ts=%s&wait=90";
+
+    private static final int TIMEOUT_SECONDS = 300000; // 5 минут
 
     VkClient vkClient;
 
@@ -109,7 +112,7 @@ public final class VkLongPoll extends AbstractLongPoll<UpdateObject> {
     }
 
     @Override
-    protected void poll(Consumer<UpdateObject> updateHandler) throws InterruptedException, ExecutionException {
+    protected void poll(Consumer<UpdateObject> updateHandler) throws Exception {
         val response = httpClient.get(uri)
                 .thenApply(value -> {
                     try (val content = value.getContent()) {
@@ -118,7 +121,7 @@ public final class VkLongPoll extends AbstractLongPoll<UpdateObject> {
                         throw new CompletionException(e);
                     }
                 })
-                .get();
+                .get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
         switch (response.failed) {
             case 0:

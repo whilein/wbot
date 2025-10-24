@@ -70,6 +70,6 @@ public abstract class AbstractLongPoll<T> {
     protected void onStart() throws Exception {
     }
 
-    protected abstract void poll(Consumer<T> updateHandler) throws InterruptedException, ExecutionException;
+    protected abstract void poll(Consumer<T> updateHandler) throws Exception;
 
 }
