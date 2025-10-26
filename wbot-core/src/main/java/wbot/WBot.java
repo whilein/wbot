@@ -47,6 +47,7 @@ import wbot.platform.vk.VkPlatform;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,7 @@ public final class WBot {
 
     Lock lifecycleLock = new ReentrantLock();
 
-    HttpClient httpClient;
+    Map<PlatformType, HttpClient> httpClients;
 
     List<Platform> platforms;
     Map<PlatformType, Platform> type2PlatformMap;
@@ -79,7 +80,9 @@ public final class WBot {
     private void start0() {
         if (threads != null) return;
 
-        httpClient.start();
+        for (val httpClient : httpClients.values()) {
+            httpClient.start();
+        }
 
         val threads = new ArrayList<Thread>(platforms.size());
         for (val platform : platforms) {
@@ -105,7 +108,9 @@ public final class WBot {
     private void stop0() {
         if (threads == null) return;
 
-        httpClient.stop();
+        for (val httpClient : httpClients.values()) {
+            httpClient.start();
+        }
 
         for (val thread : threads) {
             thread.interrupt();
@@ -147,10 +152,6 @@ public final class WBot {
 
         @Setter
         @NonFinal
-        HttpClient httpClient;
-
-        @Setter
-        @NonFinal
         JsonMapper jsonMapper;
 
         @Setter
@@ -179,6 +180,8 @@ public final class WBot {
 
         Set<EventHandler> customEventHandlers = new HashSet<>();
 
+        Map<PlatformType, HttpClient> type2HttpClient = new HashMap<>();
+
         public Builder customEventHandler(EventHandler eventHandler) {
             this.customEventHandlers.add(eventHandler);
             return this;
@@ -205,14 +208,22 @@ public final class WBot {
             return this;
         }
 
+        public Builder httpClient(HttpClient httpClient) {
+            for (val platformType : PlatformType.values()) {
+                this.type2HttpClient.put(platformType, httpClient);
+            }
+            return this;
+        }
+
+        public Builder httpClient(PlatformType platformType, HttpClient httpClient) {
+            this.type2HttpClient.put(platformType, httpClient);
+            return this;
+        }
+
         public WBot build() {
             Logger logger;
             if ((logger = this.logger) == null) {
                 logger = LoggerFactory.getLogger("wbot");
-            }
-            HttpClient httpClient;
-            if ((httpClient = this.httpClient) == null) {
-                httpClient = new DefaultHttpClient(-1);
             }
             JsonMapper jsonMapper;
             if ((jsonMapper = this.jsonMapper) == null) {
@@ -240,6 +251,12 @@ public final class WBot {
             val platforms = new ArrayList<Platform>();
 
             if (telegramToken != null) {
+                HttpClient telegramHttpClient;
+                if ((telegramHttpClient = this.type2HttpClient.get(PlatformType.TELEGRAM)) == null) {
+                    this.type2HttpClient.put(PlatformType.TELEGRAM, telegramHttpClient =
+                            new DefaultHttpClient(-1));
+                }
+
                 Logger telegramLogger;
                 if ((telegramLogger = this.telegramLogger) == null) {
                     telegramLogger = LoggerFactory.getLogger("wbot.telegram");
@@ -247,12 +264,18 @@ public final class WBot {
 
                 platforms.add(new TelegramPlatform(
                         telegramLogger,
-                        new TelegramClient(telegramToken, httpClient, jsonMapper),
+                        new TelegramClient(telegramToken, telegramHttpClient, jsonMapper),
                         eventDispatcher
                 ));
             }
 
             if (vkontakteToken != null) {
+                HttpClient vkontakteHttpClient;
+                if ((vkontakteHttpClient = this.type2HttpClient.get(PlatformType.VK)) == null) {
+                    this.type2HttpClient.put(PlatformType.VK, vkontakteHttpClient =
+                            new DefaultHttpClient(-1));
+                }
+
                 Logger vkontakteLogger;
                 if ((vkontakteLogger = this.vkontakteLogger) == null) {
                     vkontakteLogger = LoggerFactory.getLogger("wbot.vkontakte");
@@ -261,7 +284,7 @@ public final class WBot {
                 platforms.add(new VkPlatform(
                         vkontakteDocumentOwnerId,
                         vkontakteLogger,
-                        new VkClient(vkontakteToken, httpClient, jsonMapper),
+                        new VkClient(vkontakteToken, vkontakteHttpClient, jsonMapper),
                         eventDispatcher
                 ));
             }
@@ -272,7 +295,7 @@ public final class WBot {
                             Function.identity()
                     ));
 
-            return new WBot(httpClient, platforms, type2PlatformMap, commandManager);
+            return new WBot(type2HttpClient, platforms, type2PlatformMap, commandManager);
         }
 
     }
